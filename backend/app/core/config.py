@@ -1,3 +1,4 @@
+import os
 from typing import List, Union
 from pydantic import AnyHttpUrl, validator
 from pydantic_settings import BaseSettings
@@ -10,7 +11,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://pms_user:pms_secret_2026@localhost:5432/pms_database"
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///D:/PMS-platform/backend/pms.db")
 
     # Redis & Real-time
     REDIS_URL: str = "redis://localhost:6379/0"

@@ -1,19 +1,18 @@
 import uuid
 from datetime import datetime, date
 from sqlalchemy import Column, String, Boolean, DateTime, Date, ForeignKey, Float, Text, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from app.core.database import Base
+from app.core.database import Base, GUID
 from app.models.enums import InternshipType, ApplicationStatus, LogStatus, AttendanceStatus
 
 class InternshipApplication(Base):
     __tablename__ = "internship_applications"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    student_id = Column(UUID(as_uuid=True), ForeignKey("student_profiles.id", ondelete="CASCADE"), nullable=False)
-    company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id", ondelete="RESTRICT"), nullable=False)
-    mentor_id = Column(UUID(as_uuid=True), ForeignKey("mentor_profiles.id", ondelete="SET NULL"), nullable=True)
-    teacher_id = Column(UUID(as_uuid=True), ForeignKey("teacher_profiles.id", ondelete="SET NULL"), nullable=True)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    student_id = Column(GUID, ForeignKey("student_profiles.id", ondelete="CASCADE"), nullable=False)
+    company_id = Column(GUID, ForeignKey("companies.id", ondelete="RESTRICT"), nullable=False)
+    mentor_id = Column(GUID, ForeignKey("mentor_profiles.id", ondelete="SET NULL"), nullable=True)
+    teacher_id = Column(GUID, ForeignKey("teacher_profiles.id", ondelete="SET NULL"), nullable=True)
 
     internship_type = Column(SQLEnum(InternshipType), default=InternshipType.INDUSTRIAL, nullable=False)
     status = Column(SQLEnum(ApplicationStatus), default=ApplicationStatus.SUBMITTED, nullable=False)
@@ -36,8 +35,8 @@ class InternshipApplication(Base):
 class Contract(Base):
     __tablename__ = "contracts"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    application_id = Column(UUID(as_uuid=True), ForeignKey("internship_applications.id", ondelete="CASCADE"), unique=True, nullable=False)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    application_id = Column(GUID, ForeignKey("internship_applications.id", ondelete="CASCADE"), unique=True, nullable=False)
     contract_number = Column(String(100), unique=True, nullable=False)
     file_pdf_path = Column(String(500), nullable=True)
     file_docx_path = Column(String(500), nullable=True)
@@ -51,8 +50,8 @@ class Contract(Base):
 class DailyLog(Base):
     __tablename__ = "daily_logs"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    application_id = Column(UUID(as_uuid=True), ForeignKey("internship_applications.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    application_id = Column(GUID, ForeignKey("internship_applications.id", ondelete="CASCADE"), nullable=False)
     log_date = Column(Date, nullable=False, default=date.today)
     tasks_done = Column(Text, nullable=False)
     acquired_skills = Column(Text, nullable=True)
@@ -68,8 +67,8 @@ class DailyLog(Base):
 class DailyLogAttachment(Base):
     __tablename__ = "daily_log_attachments"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    daily_log_id = Column(UUID(as_uuid=True), ForeignKey("daily_logs.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    daily_log_id = Column(GUID, ForeignKey("daily_logs.id", ondelete="CASCADE"), nullable=False)
     file_path = Column(String(500), nullable=False)
     file_name = Column(String(255), nullable=False)
     file_type = Column(String(50), nullable=True)
@@ -80,8 +79,8 @@ class DailyLogAttachment(Base):
 class AttendanceRecord(Base):
     __tablename__ = "attendance_records"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    application_id = Column(UUID(as_uuid=True), ForeignKey("internship_applications.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    application_id = Column(GUID, ForeignKey("internship_applications.id", ondelete="CASCADE"), nullable=False)
     attendance_date = Column(Date, nullable=False, default=date.today)
     status = Column(SQLEnum(AttendanceStatus), default=AttendanceStatus.PRESENT, nullable=False)
     note = Column(String(255), nullable=True)
@@ -92,21 +91,18 @@ class AttendanceRecord(Base):
 class FinalAssessment(Base):
     __tablename__ = "final_assessments"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    application_id = Column(UUID(as_uuid=True), ForeignKey("internship_applications.id", ondelete="CASCADE"), unique=True, nullable=False)
-    
-    # 50 ball mentor / korxona
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    application_id = Column(GUID, ForeignKey("internship_applications.id", ondelete="CASCADE"), unique=True, nullable=False)
+
     mentor_score = Column(Float, default=0.0)
     mentor_review = Column(Text, nullable=True)
-    
-    # 50 ball OTM / Kafedra
+
     teacher_score = Column(Float, default=0.0)
     teacher_review = Column(Text, nullable=True)
-    
-    # Jami 100 ball
+
     total_score = Column(Float, default=0.0)
-    grade_letter = Column(String(5), nullable=True) # A, B, C, D, F
-    
+    grade_letter = Column(String(5), nullable=True)
+
     final_report_file = Column(String(500), nullable=True)
     submitted_at = Column(DateTime, nullable=True)
     graded_at = Column(DateTime, nullable=True)
@@ -116,12 +112,12 @@ class FinalAssessment(Base):
 class PenaltyRecord(Base):
     __tablename__ = "penalty_records"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    application_id = Column(UUID(as_uuid=True), ForeignKey("internship_applications.id", ondelete="CASCADE"), nullable=False)
-    penalty_type = Column(String(50), nullable=False) # 'MISSED_LOG', 'LATE_ARRIVAL', 'UNEXCUSED_ABSENCE', 'TAILGATING_SUSPECT'
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    application_id = Column(GUID, ForeignKey("internship_applications.id", ondelete="CASCADE"), nullable=False)
+    penalty_type = Column(String(50), nullable=False)
     penalty_points = Column(Float, nullable=False, default=1.0)
     reason = Column(Text, nullable=False)
-    is_waived = Column(Boolean, default=False) # Dekanat kechira oladi
+    is_waived = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     application = relationship("InternshipApplication", back_populates="penalties")

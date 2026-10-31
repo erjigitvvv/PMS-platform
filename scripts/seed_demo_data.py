@@ -15,6 +15,7 @@ from app.core.security import get_password_hash
 async def seed():
     print("Baza jadvallarini yaratish...")
     async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
     async with AsyncSessionLocal() as db:
@@ -117,9 +118,9 @@ async def seed():
         db.add(student_prof)
 
         await db.commit()
-        print("\n✅ Demo ma'lumotlar muvaffaqiyatli yuklandi!")
+        print("\n[OK] Demo ma'lumotlar muvaffaqiyatli yuklandi!")
         print("--------------------------------------------------")
-        print("🔑 Sinov hisoblari (Login va Parollar):")
+        print("Sinov hisoblari (Login va Parollar):")
         print("1. Super Admin:       admin       / Admin123!")
         print("2. OTM Dekanat:       dekanat     / Dekanat123!")
         print("3. Kafedra Rahbari:   oqituvchi   / Ustoz123!")

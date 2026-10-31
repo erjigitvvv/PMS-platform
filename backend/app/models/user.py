@@ -1,15 +1,14 @@
 import uuid
 from datetime import datetime
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from app.core.database import Base
+from app.core.database import Base, GUID
 from app.models.enums import UserRole
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
     username = Column(String(100), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(255), nullable=False)
@@ -20,7 +19,6 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Specific profiles
     student_profile = relationship("StudentProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
     teacher_profile = relationship("TeacherProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
     mentor_profile = relationship("MentorProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
@@ -28,9 +26,9 @@ class User(Base):
 class StudentProfile(Base):
     __tablename__ = "student_profiles"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
-    group_id = Column(UUID(as_uuid=True), ForeignKey("academic_groups.id", ondelete="SET NULL"), nullable=True)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    user_id = Column(GUID, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+    group_id = Column(GUID, ForeignKey("academic_groups.id", ondelete="SET NULL"), nullable=True)
     student_id_number = Column(String(50), unique=True, nullable=True)
     course_year = Column(String(10), default="4")
 
@@ -41,9 +39,9 @@ class StudentProfile(Base):
 class TeacherProfile(Base):
     __tablename__ = "teacher_profiles"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
-    department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id", ondelete="SET NULL"), nullable=True)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    user_id = Column(GUID, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+    department_id = Column(GUID, ForeignKey("departments.id", ondelete="SET NULL"), nullable=True)
     academic_degree = Column(String(100), nullable=True)
 
     user = relationship("User", back_populates="teacher_profile")
@@ -53,9 +51,9 @@ class TeacherProfile(Base):
 class MentorProfile(Base):
     __tablename__ = "mentor_profiles"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
-    company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    user_id = Column(GUID, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+    company_id = Column(GUID, ForeignKey("companies.id", ondelete="CASCADE"), nullable=False)
     position = Column(String(150), nullable=True)
 
     user = relationship("User", back_populates="mentor_profile")
