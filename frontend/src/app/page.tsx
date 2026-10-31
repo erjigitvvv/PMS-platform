@@ -130,6 +130,13 @@ export default function Dashboard() {
               </p>
               <p className="text-[11px] text-zinc-400 capitalize">{currentRole.toLowerCase()}</p>
             </div>
+            <a 
+              href="/login" 
+              className="text-xs font-medium text-zinc-400 hover:text-zinc-800 transition-colors pl-1"
+              title="Hisobdan chiqish / Kirish"
+            >
+              Kirish
+            </a>
           </div>
         </div>
       </header>
