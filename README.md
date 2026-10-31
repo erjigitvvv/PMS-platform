@@ -53,6 +53,24 @@ PMS-platform/
 
 ---
 
+## 📚 To'liq Loyiha Hujjatlari va Arxitektura Portali (Master Documentation)
+
+Loyiha bo'yicha ishlab chiqilgan barcha rasmiy spetsifikatsiyalar va standartlar:
+
+1. ⚙️ **[Tizimning 6 ta Asosiy Matematik Algoritmi](docs/architecture/system_algorithms.md)** — Shartnoma generatsiyasi, Logbook State Machine, Davomat formulasi va ECTS konvertatsiyasi.
+2. 🎯 **[5 ta Rol Bo'yicha Bosqichma-bosqich Algoritmlar](docs/architecture/role_based_algorithms.md)** — Talaba, Mentor, Ustoz, Dekanat va Adminning to'liq harakatlar xaritasi.
+3. 📝 **[Ma'lumotlar Kiritish va Maydonlar Spetsifikatsiyasi](docs/architecture/role_data_input_specification.md)** — Avtomatik Student ID, optional rekvizitlar va formalar.
+4. 🗄️ **[Ma'lumotlar Bazasi va ACID Algoritmlari](docs/architecture/database_master_architecture.md)** — PostgreSQL 16 relyatsion sxemasi (16 ta jadval), Pessimistic locking va triggerlar.
+5. 🤝 **[Talaba-Mentor O'zaro Ta'sir Protokoli](docs/architecture/student_mentor_interaction_protocol.md)** — Kunlik kundalik yozish va 1-bosishda tasdiqlash.
+6. 🤖 **[Telegram Bot Ekotizimi va Ssenariysi](docs/architecture/telegram_bot_workflow.md)** — aiogram 3.x FSM interaktiv boti.
+7. 🛡️ **[Eskalatsiya, Tailgating Antifraud va Jarimalar](docs/architecture/notification_antifraud_penalties.md)** — Xabarnomalar eskalatsiyasi, soxtakorlikni fosh qilish va jarima formulasi.
+8. ⚠️ **[Foydalanish Xatarlari va Himoya Matritsasi](docs/architecture/risk_management_matrix.md)** — Har bir rol bo'yicha risklar va dasturiy yechimlar.
+9. ⚪ **[Oq Minimalistik Dizayn Tizimi](docs/architecture/ui_design_system.md)** — Pure White & Clean tokens, Tailwind va komponentlar standarti.
+10. 🔒 **[RBAC Ruxsatlar va Vakolatlar Matritsasi](docs/architecture/rbac_matrix.md)** — 5 ta rolning qat'iy CRUD chegaralari.
+11. 📜 **[AI Development Constitution (AI Qoidalari)](AI_GUIDELINES.md)** va **[.cursorrules](.cursorrules)** — Sun'iy intellekt arxitekturani buzmasligi uchun qat'iy qoidalar.
+
+---
+
 ## 👥 5 ta Asosiy Rol va Huquqlar Matritsasi
 
 ```mermaid
