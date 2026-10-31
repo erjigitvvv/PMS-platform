@@ -25,13 +25,26 @@ async def record_attendance(
     data: AttendanceCreate,
     db: AsyncSession = Depends(get_db)
 ):
-    record = AttendanceRecord(
-        application_id=data.application_id,
-        attendance_date=data.attendance_date,
-        status=data.status,
-        note=data.note
+    # Upsert mantiqi: agar shu kunga allaqachon davomat belgilangan bo'lsa, yangilaymiz
+    existing = await db.execute(
+        select(AttendanceRecord).where(
+            AttendanceRecord.application_id == data.application_id,
+            AttendanceRecord.attendance_date == data.attendance_date
+        )
     )
-    db.add(record)
+    record = existing.scalars().first()
+    if record:
+        record.status = data.status
+        record.note = data.note
+    else:
+        record = AttendanceRecord(
+            application_id=data.application_id,
+            attendance_date=data.attendance_date,
+            status=data.status,
+            note=data.note
+        )
+        db.add(record)
+
     await db.commit()
     await db.refresh(record)
     return record

@@ -32,6 +32,21 @@ async def create_daily_log(
     if current_user.role != UserRole.STUDENT:
         raise HTTPException(status_code=403, detail="Faqat talabalar kundalik to'ldira oladi")
 
+    # 1. Kelajak sanani tekshirish
+    from datetime import date
+    if data.log_date > date.today():
+        raise HTTPException(status_code=400, detail="Kelajakdagi kun uchun kundalik kiritish taqiqlanadi!")
+
+    # 2. Duplikatsiya tekshiruvi (bitta kunda faqat 1 ta kundalik)
+    existing_check = await db.execute(
+        select(DailyLog).where(
+            DailyLog.application_id == data.application_id,
+            DailyLog.log_date == data.log_date
+        )
+    )
+    if existing_check.scalars().first():
+        raise HTTPException(status_code=400, detail="Ushbu sana uchun amaliyot kundaligi allaqachon kiritilgan!")
+
     log = DailyLog(
         application_id=data.application_id,
         log_date=data.log_date,
