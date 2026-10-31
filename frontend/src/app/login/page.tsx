@@ -215,10 +215,15 @@ export default function LoginPage() {
 
           {/* Telegram Login Info Card */}
           <div className="pt-4 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-400">
-            <span>Telegram Bot orqali ham kirish mumkin</span>
-            <span className="text-zinc-900 font-medium cursor-pointer hover:underline">
-              @pms_otm_bot
-            </span>
+            <span>Telegram Bot orqali ham kirish mumkin:</span>
+            <a 
+              href="https://t.me/tiupm_bot" 
+              target="_blank" 
+              rel="noreferrer"
+              className="text-zinc-900 font-semibold hover:underline"
+            >
+              @tiupm_bot
+            </a>
           </div>
         </div>
 
