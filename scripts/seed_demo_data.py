@@ -20,7 +20,7 @@ async def seed():
 
     async with AsyncSessionLocal() as db:
         print("Demo ma'lumotlarni kiritish...")
-        
+
         # 1. Faculty, Department, Group
         faculty = Faculty(name="Axborot texnologiyalari va raqamli iqtisodiyot", code="ATRI")
         db.add(faculty)
@@ -34,8 +34,9 @@ async def seed():
         db.add(group)
         await db.flush()
 
-        # 2. Company & Vacancy
-        company = Company(
+        # 2. Companies & Vacancies (4 partner companies)
+        # Company 1: Uzum Technologies
+        c1 = Company(
             name="Uzum Technologies MCHJ",
             tin_stir="305889123",
             address="Toshkent sh., Mirobod t., Oybek ko'chasi 12",
@@ -44,17 +45,75 @@ async def seed():
             email="hr@uzum.com",
             is_partner=True
         )
-        db.add(company)
+        db.add(c1)
         await db.flush()
-
-        vacancy = Vacancy(
-            company_id=company.id,
+        db.add(Vacancy(
+            company_id=c1.id,
             title="Junior Backend Developer (Python / FastAPI)",
             description="Talabalar uchun haq to'lanadigan 3 oylik amaliyot o'rni",
             requirements="Python, REST API, Git asoslari",
             quota=3
+        ))
+
+        # Company 2: IT Park Uzbekistan
+        c2 = Company(
+            name="IT Park Uzbekistan",
+            tin_stir="203445678",
+            address="Toshkent sh., Yunusobod t., Talabalar ko'chasi 1",
+            director_name="Farhod Ibragimov",
+            contact_phone="+998712999999",
+            email="hr@it-park.uz",
+            is_partner=True
         )
-        db.add(vacancy)
+        db.add(c2)
+        await db.flush()
+        db.add(Vacancy(
+            company_id=c2.id,
+            title="Frontend Developer intern",
+            description="React / Next.js yo'nalishi bo'yicha amaliyot va real loyihalar",
+            requirements="JavaScript/TypeScript, React, Tailwind CSS",
+            quota=5
+        ))
+
+        # Company 3: Click MCHJ
+        c3 = Company(
+            name="Click MCHJ",
+            tin_stir="304112233",
+            address="Toshkent sh., Chilonzor t., Bunyodkor shoh ko'chasi 42",
+            director_name="Ulug'bek Rustamov",
+            contact_phone="+998712310000",
+            email="hr@click.uz",
+            is_partner=True
+        )
+        db.add(c3)
+        await db.flush()
+        db.add(Vacancy(
+            company_id=c3.id,
+            title="QA / Tester intern",
+            description="Dasturiy ta'minot sifatini ta'minlash va testlash bo'yicha amaliyot",
+            requirements="Postman, Test turlari, SQL asoslari",
+            quota=3
+        ))
+
+        # Company 4: Aloqabank ATB
+        c4 = Company(
+            name="Aloqabank ATB",
+            tin_stir="200556677",
+            address="Toshkent sh., Shayxontohur t., Amir Temur shoh ko'chasi 4",
+            director_name="Kamiljon To'laganov",
+            contact_phone="+998712380000",
+            email="hr@aloqabank.uz",
+            is_partner=True
+        )
+        db.add(c4)
+        await db.flush()
+        db.add(Vacancy(
+            company_id=c4.id,
+            title="Data Analyst intern",
+            description="Bank ma'lumotlarini tahlil qilish va dashboardlar yaratish",
+            requirements="Python (Pandas), SQL, PowerBI / Excel",
+            quota=4
+        ))
         await db.flush()
 
         # 3. Users for all 5 roles
@@ -101,7 +160,7 @@ async def seed():
         )
         db.add(mentor_user)
         await db.flush()
-        mentor_prof = MentorProfile(user_id=mentor_user.id, company_id=company.id, position="Lead Backend Engineer")
+        mentor_prof = MentorProfile(user_id=mentor_user.id, company_id=c1.id, position="Lead Backend Engineer")
         db.add(mentor_prof)
 
         # Role 5: Student (Amaliyotchi talaba)
@@ -118,7 +177,7 @@ async def seed():
         db.add(student_prof)
 
         await db.commit()
-        print("\n[OK] Demo ma'lumotlar muvaffaqiyatli yuklandi!")
+        print("\n[OK] Demo ma'lumotlar muvaffaqiyatli yuklandi (4 ta korxona va barcha rollar)!")
         print("--------------------------------------------------")
         print("Sinov hisoblari (Login va Parollar):")
         print("1. Super Admin:       admin       / Admin123!")
