@@ -67,7 +67,8 @@ Loyiha bo'yicha ishlab chiqilgan barcha rasmiy spetsifikatsiyalar va standartlar
 8. ⚠️ **[Foydalanish Xatarlari va Himoya Matritsasi](docs/architecture/risk_management_matrix.md)** — Har bir rol bo'yicha risklar va dasturiy yechimlar.
 9. ⚪ **[Oq Minimalistik Dizayn Tizimi](docs/architecture/ui_design_system.md)** — Pure White & Clean tokens, Tailwind va komponentlar standarti.
 10. 🔒 **[RBAC Ruxsatlar va Vakolatlar Matritsasi](docs/architecture/rbac_matrix.md)** — 5 ta rolning qat'iy CRUD chegaralari.
-11. 📜 **[AI Development Constitution (AI Qoidalari)](AI_GUIDELINES.md)** va **[.cursorrules](.cursorrules)** — Sun'iy intellekt arxitekturani buzmasligi uchun qat'iy qoidalar.
+11. 📋 **[User Acceptance Testing (UAT Mezonlari)](docs/architecture/user_acceptance_testing_uat.md)** — 5 ta rol bo'yicha qabul qilish mezonlari va test natijalari (100% Passed).
+12. 📜 **[AI Development Constitution (AI Qoidalari)](AI_GUIDELINES.md)** va **[.cursorrules](.cursorrules)** — Sun'iy intellekt arxitekturani buzmasligi uchun qat'iy qoidalar.
 
 ---
 
