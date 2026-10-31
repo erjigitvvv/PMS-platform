@@ -1,0 +1,27 @@
+# PMS Platform - Cursor and AI Rules
+
+You are working on the "PMS Platform" (OTM Talabalar Amaliyotini Boshqarish Platformasi).
+Always strictly follow these rules:
+
+1. ARCHITECTURE:
+   - Backend: FastAPI (Python 3.11+), SQLAlchemy 2.0 Async, Pydantic v2, PostgreSQL, Redis.
+   - Frontend: Next.js 14 (App router), TypeScript, Tailwind CSS, Lucide icons.
+   - NO OTHER UI LIBRARIES ALLOWED (No MUI, No Chakra, No Bootstrap).
+
+2. DESIGN SYSTEM:
+   - Ultra-Clean White Minimalist ONLY (Linear / Vercel style).
+   - Canvas Background: #FAFAFA.
+   - Cards: bg-white, border border-zinc-200/80, rounded-2xl, shadow-subtle.
+   - Text: text-zinc-900 (primary), text-zinc-500 (secondary).
+   - Buttons: bg-zinc-900 text-white (primary), bg-white border border-zinc-200 text-zinc-800 (secondary).
+   - NO gaudy gradients, NO heavy black drop shadows.
+
+3. ROLES & RBAC:
+   - Exactly 5 roles: ADMIN, OTM_STAFF, TEACHER, MENTOR, STUDENT.
+   - Always protect endpoints with dependencies=[Depends(require_roles([...]))].
+
+4. LOCALIZATION:
+   - UI and user-facing notifications must be in Uzbek (Latin script).
+   - Code identifiers, variables, schemas, and commits must be in English.
+
+Refer to AI_GUIDELINES.md for complete specifications.
