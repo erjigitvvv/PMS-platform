@@ -43,12 +43,13 @@ async def grade_by_mentor(
     if not assessment:
         raise HTTPException(status_code=404, detail="Baholash ma'lumotlari topilmadi")
 
-    if data.mentor_score > 50:
-        raise HTTPException(status_code=400, detail="Mentor bahosi 50 balldan oshmasligi kerak")
+    if data.mentor_score < 0 or data.mentor_score > 5:
+        raise HTTPException(status_code=400, detail="Mentor bahosi 0 dan 5 gacha bo'lishi kerak")
 
     assessment.mentor_score = data.mentor_score
     assessment.mentor_review = data.mentor_review
-    assessment.total_score = assessment.mentor_score + assessment.teacher_score
+    # 0-5 ballik mentor bahosini 50 ballik shkalaga ko'paytirib OTM bahosiga qo'shamiz
+    assessment.total_score = (assessment.mentor_score * 10) + assessment.teacher_score
     assessment.grade_letter = calculate_grade(assessment.total_score)
 
     await db.commit()
@@ -71,7 +72,7 @@ async def grade_by_teacher(
 
     assessment.teacher_score = data.teacher_score
     assessment.teacher_review = data.teacher_review
-    assessment.total_score = assessment.mentor_score + assessment.teacher_score
+    assessment.total_score = (assessment.mentor_score * 10) + assessment.teacher_score
     assessment.grade_letter = calculate_grade(assessment.total_score)
 
     await db.commit()

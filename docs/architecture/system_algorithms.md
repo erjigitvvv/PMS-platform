@@ -28,8 +28,13 @@
 
 ## 3. Davomat Nazorati va KPI Foizini Hisoblash Algoritmi
 * **Ish kunlari:** Shanba va yakshanba hamda davlat bayramlari chiqarib tashlanadi.
+* **Holatlar:**
+  * `PRESENT` (Kelgan) = 1.0
+  * `LATE` (Kech kelgan) = 0.75
+  * `EXCUSED` (Sababli) = 0.5
+  * `ABSENT` (Kelmagan) = 0.0
 * **Formula:**
-  $$\text{Davomat Foizi} = \left( \frac{N_{\text{kelgan}} + 0.5 \times N_{\text{sababli}}}{N_{\text{ish kunlari}}} \right) \times 100\%$$
+  $$\text{Davomat Foizi} = \left( \frac{N_{\text{kelgan}} + 0.75 \times N_{\text{kech\_kelgan}} + 0.5 \times N_{\text{sababli}}}{N_{\text{ish kunlari}}} \right) \times 100\%$$
 * **Risk darajalari:**
   * $\ge 85\%$: Normal (Yashil);
   * $70\% - 84\%$: Diqqat talab (Sariq eslatma talaba va ustozga);
@@ -39,9 +44,10 @@
 
 ## 4. 100 Ballik Baholash va ECTS Konvertatsiya Algoritmi
 * **Baho taqsimoti:**
-  * $S_{\text{mentor}} \in [0, 50]$ (Korxona amaliy intizomi va vazifalar);
-  * $S_{\text{teacher}} \in [0, 50]$ (Kafedra hisobot himoyasi).
-  * $S_{\text{jami}} = S_{\text{mentor}} + S_{\text{teacher}} \in [0, 100]$.
+  * **Mentor Bahosi (0 - 5 ball shkalasi):** Korxona mentori talabaga klassik **0 dan 5 gacha** (0, 1, 2, 3, 4, 5 ball) amaliy baho qo'yadi. Tizim uni avtomatik 10 ga ko'paytirib, 50 ballik ekvivalentga aylantiradi ($S_{\text{mentor\_norm}} = S_{\text{mentor}} \times 10$).
+  * **Kafedra O'qituvchisi Bahosi (0 - 50 ball):** Amaliyot hisoboti va himoya natijasi.
+  * **Jami Natija:**
+    $$S_{\text{jami}} = (S_{\text{mentor}} \times 10) + S_{\text{teacher}} \quad (0 \le S_{\text{jami}} \le 100)$$
 * **Harfli reyting:**
   * $90 - 100$: **A** (A'lo)
   * $80 - 89$: **B** (Yaxshi)

@@ -27,6 +27,7 @@ class LogStatus(str, enum.Enum):
     REJECTED = "REJECTED"
 
 class AttendanceStatus(str, enum.Enum):
-    PRESENT = "PRESENT"
-    ABSENT = "ABSENT"
-    EXCUSED = "EXCUSED"
+    PRESENT = "PRESENT"       # Kelgan
+    LATE = "LATE"             # Kech kelgan
+    ABSENT = "ABSENT"         # Kelmagan
+    EXCUSED = "EXCUSED"       # Sababli

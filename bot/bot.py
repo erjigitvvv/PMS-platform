@@ -119,7 +119,7 @@ async def show_stats(message: types.Message):
 async def send_contract_pdf(message: types.Message):
     await message.answer("📄 3 tomonlama rasmiy shartnomangiz tayyorlanmoqda... (PDF shaklida yuboriladi)")
 
-# --- 3. MENTOR INLINE 1-CLICK APPROVAL / REJECTION ---
+# --- 3. MENTOR INLINE 1-CLICK APPROVAL / ATTENDANCE / GRADING ---
 
 @dp.callback_query(F.data.startswith("approve_log:"))
 async def approve_log_callback(callback: types.CallbackQuery):
@@ -134,6 +134,29 @@ async def reject_log_callback(callback: types.CallbackQuery):
     await callback.message.edit_reply_markup(reply_markup=None)
     await callback.message.answer(f"❌ Hisobot qaytarildi (ID: {log_id}). Talaba uni qayta to'ldiradi.")
     await callback.answer("Qaytarildi!")
+
+# Attendance tracking by Mentor: [🟢 Keldi] [🟡 Kech keldi] [🔴 Kelmadi] [🔵 Sababli]
+@dp.callback_query(F.data.startswith("att:"))
+async def attendance_callback(callback: types.CallbackQuery):
+    _, student_name, status = callback.data.split(":")
+    status_labels = {
+        "PRESENT": "🟢 Kelgan",
+        "LATE": "🟡 Kech kelgan",
+        "ABSENT": "🔴 Kelmagan",
+        "EXCUSED": "🔵 Sababli"
+    }
+    label = status_labels.get(status, status)
+    await callback.message.edit_reply_markup(reply_markup=None)
+    await callback.message.answer(f"Davomat belgilandi: <b>{student_name}</b> — {label}")
+    await callback.answer("Davomat saqlandi!")
+
+# Mentor Final Grading: 0-5 Scale (0, 1, 2, 3, 4, 5 ball)
+@dp.callback_query(F.data.startswith("mentor_grade:"))
+async def mentor_grade_callback(callback: types.CallbackQuery):
+    _, app_id, score = callback.data.split(":")
+    await callback.message.edit_reply_markup(reply_markup=None)
+    await callback.message.answer(f"⭐ Talabaga yakuniy mentor bahosi qo'yildi: <b>{score} / 5 ball</b> (A'lo darajada bazaga saqlandi).")
+    await callback.answer("Baho saqlandi!")
 
 async def main():
     if not TOKEN:

@@ -15,6 +15,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
       case 'PENDING':
       case 'SUBMITTED':
       case 'IN_PROGRESS':
+      case 'LATE':
         return 'bg-amber-50 text-amber-700 border-amber-200/80';
       case 'REJECTED':
       case 'ABSENT':
@@ -31,6 +32,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
       case 'SUBMITTED': return 'Yuborilgan';
       case 'REJECTED': return 'Qaytarilgan';
       case 'PRESENT': return 'Kelgan';
+      case 'LATE': return 'Kech keldi';
       case 'ABSENT': return 'Kelmadi';
       case 'IN_PROGRESS': return 'Jarayonda';
       case 'COMPLETED': return 'Tugatilgan';
