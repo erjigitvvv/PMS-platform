@@ -31,6 +31,7 @@ class InternshipApplication(Base):
     daily_logs = relationship("DailyLog", back_populates="application", cascade="all, delete-orphan")
     attendances = relationship("AttendanceRecord", back_populates="application", cascade="all, delete-orphan")
     assessment = relationship("FinalAssessment", back_populates="application", uselist=False, cascade="all, delete-orphan")
+    penalties = relationship("PenaltyRecord", back_populates="application", cascade="all, delete-orphan")
 
 class Contract(Base):
     __tablename__ = "contracts"
@@ -111,3 +112,16 @@ class FinalAssessment(Base):
     graded_at = Column(DateTime, nullable=True)
 
     application = relationship("InternshipApplication", back_populates="assessment")
+
+class PenaltyRecord(Base):
+    __tablename__ = "penalty_records"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    application_id = Column(UUID(as_uuid=True), ForeignKey("internship_applications.id", ondelete="CASCADE"), nullable=False)
+    penalty_type = Column(String(50), nullable=False) # 'MISSED_LOG', 'LATE_ARRIVAL', 'UNEXCUSED_ABSENCE', 'TAILGATING_SUSPECT'
+    penalty_points = Column(Float, nullable=False, default=1.0)
+    reason = Column(Text, nullable=False)
+    is_waived = Column(Boolean, default=False) # Dekanat kechira oladi
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    application = relationship("InternshipApplication", back_populates="penalties")

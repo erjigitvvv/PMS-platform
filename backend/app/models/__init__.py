@@ -8,7 +8,8 @@ from app.models.internship import (
     DailyLog,
     DailyLogAttachment,
     AttendanceRecord,
-    FinalAssessment
+    FinalAssessment,
+    PenaltyRecord
 )
 
 __all__ = [
@@ -31,5 +32,6 @@ __all__ = [
     "DailyLog",
     "DailyLogAttachment",
     "AttendanceRecord",
-    "FinalAssessment"
+    "FinalAssessment",
+    "PenaltyRecord"
 ]
