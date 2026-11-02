@@ -1,23 +1,18 @@
-# Implementation Plan: Teacher & Admin Portal Submenus, 100-Point ECTS, and Anti-Fraud Integration
+# Implementation Plan: Dekanat Portal Comprehensive Expansion & Notifications
 
 ## Context
-Following the successful implementation of the Dekanat portal, Product Owner (PO) has requested equivalent advanced enhancements to the remaining two major portals:
-1. **Teacher Portal (`frontend/src/app/teacher/page.tsx`)**:
-   - `CollapsibleSidebar` with "Akademik Nazorat" accordion submenus: "Kundaliklar Taftishi" (`logbook-review`) and "100 Ballik ECTS Baholash" (`grading-100`).
-   - Interactive 100-point ECTS grading calculator combining mentor scores (0-50) and teacher defense scores (0-50) to output A, B, C, D, F grades.
-   - Live search and student detail modal.
-2. **Admin Portal (`frontend/src/app/admin/page.tsx`)**:
-   - `CollapsibleSidebar` with accordion submenus:
-     - "Tuzilma & Kvotalar" (`structure`): "Fakultetlar va Dekanatlar" (`faculties-depts`) with `[+ Yangi Fakultet/Dekanat Qo'shish]` modal generating `DK######` logins, and "Akademik Guruhlar va Kvotalar" (`groups-quotas`).
-     - "Xavfsizlik & Anti-Fraud" (`security`): "Anti-Tailgating Jurnali" (`antifraud-logs`) with CRITICAL/WARNING/INFO risk levels, and "Tizim Zaxirasi" (`system-backups`).
-3. **Design & Quality Standards**:
-   - 100% vector Lucide React icons, 0 emojis, clean minimalist TIU branding, `shadow-sm`.
-   - Verified 0-error Next.js production build (`npm run build`) and 24/24 passing Python Pytest integration tests.
+Product Owner (PO) has requested a comprehensive set of enhancements to the Dekanat portal (`frontend/src/app/dekanat/page.tsx`) and login logo (`frontend/src/app/login/page.tsx`):
+1. **Login Logo (`/login`)**: Enlarge to `h-28 sm:h-32 w-auto object-contain`, borderless, transparent, centered.
+2. **Notification Popover**: Add interactive `Bell` icon with unread badge (`3`) in the Dekanat header, opening a dropdown popover with "Bildirishnomalar Markazi", "Barchasini o'qilgan deb belgilash", and 4 real notifications with relative timestamps and category badges.
+3. **Full-Width Content Container**: Expand container from `max-w-6xl` to `max-w-7xl` / `w-full px-4 sm:px-6 lg:px-8` so tables use full viewport width.
+4. **Student Submenus & Filtering**: Restructure student submenus to:
+   - `Barcha Talabalar`
+   - `⚠️ Ustozsiz Talabalar`
+   - `🏢 Korxona Biriktiruvi`
+   - `📊 Kundalik & Davomat`
+   Add group filter pills (`[Barchasi]`, `[DI-202-22]`, `[DT-207-22]`, `[AI-101-23]`), multi-select checkboxes for bulk operations, and export button.
+5. **Optional Student Creation Modal**: Remove mandatory `*` for teacher and company in `isStudentModalOpen` modal. Provide default `-- Biriktirilmasin (Keyinroq biriktirish) --` and `-- Tanlanmasin (Keyinroq biriktirish) --` options.
+6. **Teachers Table View**: Add table view for "Kafedra Ustozlari" with columns for ID (`TC######`), name, degree/position, department, phone, academic workload progress bar (`3/8`), status, and "Ko'rish" modal trigger, with a toggle between Grid and Table views.
+7. **Partner Companies & New Partner Modal**: Enhance partner company catalog and add a **"+ Yangi Tashkilot Qo'shish"** modal supporting name, logo upload / initials badge, category, quota, TIN, address, contact person, and phone.
+8. **Verification**: Verify Next.js production build (`npm --prefix frontend run build`) and Pytest suite (`pytest backend/tests/ -v`).
 
-## Critical Files to Modify
-- `frontend/src/app/teacher/page.tsx`: Add Kundaliklar Taftishi, 100-point ECTS grading calculator, live search, and StudentDetailModal.
-- `frontend/src/app/admin/page.tsx`: Add Faculties/Dekanats management with modal credential generation, Academic Groups/Quotas, Anti-Tailgating audit logs, and System Backups.
-
-## Verification Steps
-1. Run `npm --prefix frontend run build` to verify 0 errors.
-2. Run `python -m pytest backend/tests/ -v` to verify 24/24 tests pass successfully.

@@ -293,23 +293,11 @@ export default function CollapsibleSidebar({
       {/* Top Section: Brand & University */}
       <div className="space-y-4">
         {/* Header / Brand */}
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-          <div className="flex items-center space-x-3 overflow-hidden">
-            <div className="h-9 w-9 flex items-center justify-center shrink-0">
-              <img src="/tiu-official-logo.png" alt="TIU" className="h-full w-full object-contain" />
-            </div>
-            {!isCollapsed && (
-              <div className="transition-all duration-300 min-w-0">
-                <h2 className="text-xs font-bold text-zinc-900 truncate tracking-tight">TIU PLATFORM</h2>
-                <p className="text-[10px] text-zinc-400 truncate">{roleTitle}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Desktop Toggle Button */}
+        <div className="flex flex-col items-center justify-center pb-3 border-b border-zinc-100 relative text-center">
+          {/* Desktop Toggle Button in absolute corner */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden md:flex items-center justify-center w-7 h-7 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
+            className="hidden md:flex items-center justify-center w-7 h-7 rounded-lg text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors absolute right-0 top-0"
             title={isCollapsed ? "Menyuni kengaytirish" : "Menyuni yig'ish"}
           >
             {isCollapsed ? (
@@ -318,6 +306,18 @@ export default function CollapsibleSidebar({
               <ChevronLeft className="w-4 h-4 transition-transform duration-200" />
             )}
           </button>
+
+          <div className="flex flex-col items-center w-full">
+            <div className={`${isCollapsed ? 'h-10 w-10' : 'h-14 sm:h-16 w-auto'} flex items-center justify-center shrink-0 mb-2 transition-all`}>
+              <img src="/tiu-official-logo.png" alt="Tashkent International University" className="h-full w-full object-contain" />
+            </div>
+            {!isCollapsed && (
+              <div className="transition-all duration-300 w-full px-1">
+                <h2 className="text-xs font-bold text-zinc-900 tracking-tight leading-snug">Tashkent International University</h2>
+                <p className="text-[10px] text-zinc-500 font-medium mt-0.5">Amaliyot Boshqaruv Portali</p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Navigation Items */}
