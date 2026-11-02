@@ -18,7 +18,9 @@ import {
   ChevronRight,
   ShieldCheck,
   Send,
-  Download
+  Download,
+  Briefcase,
+  BookOpen
 } from 'lucide-react';
 import { StatsCard } from '@/components/StatsCard';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -102,11 +104,13 @@ export default function Dashboard() {
                     : 'text-zinc-500 hover:text-zinc-800'
                 }`}
               >
-                {role === 'STUDENT' && '🎓 Talaba'}
-                {role === 'MENTOR' && '🏢 Mentor'}
-                {role === 'OTM_STAFF' && '🏛 Dekanat'}
-                {role === 'TEACHER' && '👨‍🏫 Ustoz'}
-                {role === 'ADMIN' && '👑 Admin'}
+                <span className="flex items-center space-x-1.5">
+                  {role === 'STUDENT' && <><GraduationCap className="w-3.5 h-3.5" /><span>Talaba</span></>}
+                  {role === 'MENTOR' && <><Briefcase className="w-3.5 h-3.5" /><span>Mentor</span></>}
+                  {role === 'OTM_STAFF' && <><Building2 className="w-3.5 h-3.5" /><span>Dekanat</span></>}
+                  {role === 'TEACHER' && <><BookOpen className="w-3.5 h-3.5" /><span>Ustoz</span></>}
+                  {role === 'ADMIN' && <><ShieldCheck className="w-3.5 h-3.5" /><span>Admin</span></>}
+                </span>
               </button>
             ))}
           </div>
@@ -326,7 +330,7 @@ export default function Dashboard() {
                         </button>
                       </>
                     ) : (
-                      <span className="text-xs text-emerald-600 font-medium">✓ Tasdiqlangan</span>
+                      <span className="text-xs text-emerald-600 font-medium flex items-center space-x-1"><CheckCircle2 className="w-3.5 h-3.5" /><span>Tasdiqlangan</span></span>
                     )}
                   </div>
                 </div>

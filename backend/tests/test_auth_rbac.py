@@ -13,8 +13,13 @@ from app.core.config import settings
 
 BASE_URL = "http://127.0.0.1:8000/api/v1"
 
-# Test credentials for all 5 roles
+# Standard 2-letter + 6-digit credentials and aliases for all 5 roles
 TEST_CREDENTIALS = {
+    "admin_standard": {"username": "AD987789", "password": "Admin123!", "expected_role": "ADMIN"},
+    "dekanat_standard": {"username": "DK204581", "password": "Dekanat123!", "expected_role": "OTM_STAFF"},
+    "mentor_standard": {"username": "MN408193", "password": "Mentor123!", "expected_role": "MENTOR"},
+    "teacher_standard": {"username": "TC309482", "password": "Ustoz123!", "expected_role": "TEACHER"},
+    "student_standard": {"username": "ST501824", "password": "Talaba123!", "expected_role": "STUDENT"},
     "admin": {"username": "admin", "password": "Admin123!", "expected_role": "ADMIN"},
     "dekanat": {"username": "dekanat", "password": "Dekanat123!", "expected_role": "OTM_STAFF"},
     "oqituvchi": {"username": "oqituvchi", "password": "Ustoz123!", "expected_role": "TEACHER"},

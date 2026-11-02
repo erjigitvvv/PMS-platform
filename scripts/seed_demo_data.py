@@ -116,65 +116,78 @@ async def seed():
         ))
         await db.flush()
 
-        # 3. Users for all 5 roles
-        # Role 1: Super Admin
-        admin = User(
-            username="admin",
+        # 3. Users for all 5 roles (2 Capital letters + 6 digits standard)
+        # Role 1: Super Admin (AD987789)
+        admin_primary = User(
+            username="AD987789",
             hashed_password=get_password_hash("Admin123!"),
             full_name="Asosiy Administrator",
             role=UserRole.ADMIN,
             phone="+998901111111"
         )
-        db.add(admin)
+        db.add(admin_primary)
 
-        # Role 2: OTM Staff (Dekanat / Amaliyot bo'limi)
-        staff = User(
-            username="dekanat",
+        # Role 2: OTM Staff (DK204581)
+        staff_primary = User(
+            username="DK204581",
             hashed_password=get_password_hash("Dekanat123!"),
             full_name="Alisher Qodirov (Amaliyot bo'limi boshlig'i)",
             role=UserRole.OTM_STAFF,
             phone="+998902222222"
         )
-        db.add(staff)
+        db.add(staff_primary)
 
-        # Role 3: Teacher (Kafedra o'qituvchisi)
-        teacher_user = User(
-            username="oqituvchi",
+        # Role 3: Teacher (TC309482)
+        teacher_primary = User(
+            username="TC309482",
             hashed_password=get_password_hash("Ustoz123!"),
             full_name="Dotsent Jamshid Karimov",
             role=UserRole.TEACHER,
             phone="+998903333333"
         )
-        db.add(teacher_user)
+        db.add(teacher_primary)
         await db.flush()
-        teacher_prof = TeacherProfile(user_id=teacher_user.id, department_id=department.id, academic_degree="Dotsent")
-        db.add(teacher_prof)
+        db.add(TeacherProfile(user_id=teacher_primary.id, department_id=department.id, academic_degree="Dotsent"))
 
-        # Role 4: Mentor (Korxona rahbari/mentori)
-        mentor_user = User(
-            username="mentor",
+        # Role 4: Mentor (MN408193)
+        mentor_primary = User(
+            username="MN408193",
             hashed_password=get_password_hash("Mentor123!"),
             full_name="Sardor Bekmurodov (Lead Engineer)",
             role=UserRole.MENTOR,
             phone="+998904444444"
         )
-        db.add(mentor_user)
+        db.add(mentor_primary)
         await db.flush()
-        mentor_prof = MentorProfile(user_id=mentor_user.id, company_id=c1.id, position="Lead Backend Engineer")
-        db.add(mentor_prof)
+        db.add(MentorProfile(user_id=mentor_primary.id, company_id=c1.id, position="Lead Backend Engineer"))
 
-        # Role 5: Student (Amaliyotchi talaba)
-        student_user = User(
-            username="talaba",
+        # Role 5: Student (ST501824)
+        student_primary = User(
+            username="ST501824",
             hashed_password=get_password_hash("Talaba123!"),
             full_name="Bekzod Ergashev (Talaba)",
             role=UserRole.STUDENT,
             phone="+998905555555"
         )
-        db.add(student_user)
+        db.add(student_primary)
         await db.flush()
-        student_prof = StudentProfile(user_id=student_user.id, group_id=group.id, student_id_number="TIU-2022-049")
-        db.add(student_prof)
+        db.add(StudentProfile(user_id=student_primary.id, group_id=group.id, student_id_number="TIU-2022-049"))
+
+        # Legacy aliases for automated integration tests
+        db.add(User(username="admin", hashed_password=get_password_hash("Admin123!"), full_name="Asosiy Administrator", role=UserRole.ADMIN, phone="+998901111112"))
+        db.add(User(username="dekanat", hashed_password=get_password_hash("Dekanat123!"), full_name="Alisher Qodirov", role=UserRole.OTM_STAFF, phone="+998902222223"))
+        t_leg = User(username="oqituvchi", hashed_password=get_password_hash("Ustoz123!"), full_name="Dotsent Jamshid Karimov", role=UserRole.TEACHER, phone="+998903333334")
+        db.add(t_leg)
+        await db.flush()
+        db.add(TeacherProfile(user_id=t_leg.id, department_id=department.id, academic_degree="Dotsent"))
+        m_leg = User(username="mentor", hashed_password=get_password_hash("Mentor123!"), full_name="Sardor Bekmurodov", role=UserRole.MENTOR, phone="+998904444445")
+        db.add(m_leg)
+        await db.flush()
+        db.add(MentorProfile(user_id=m_leg.id, company_id=c1.id, position="Lead Backend Engineer"))
+        s_leg = User(username="talaba", hashed_password=get_password_hash("Talaba123!"), full_name="Bekzod Ergashev", role=UserRole.STUDENT, phone="+998905555556")
+        db.add(s_leg)
+        await db.flush()
+        db.add(StudentProfile(user_id=s_leg.id, group_id=group.id, student_id_number="TIU-2022-050"))
 
         await db.commit()
         print("\n[OK] Demo ma'lumotlar muvaffaqiyatli yuklandi (4 ta korxona va barcha rollar)!")

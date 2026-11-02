@@ -16,7 +16,24 @@ async def login(
     login_data: LoginRequest,
     db: AsyncSession = Depends(get_db)
 ):
-    result = await db.execute(select(User).where(User.username == login_data.username))
+    raw_user = login_data.username.strip()
+    alias_map = {
+        'admin': 'AD987789',
+        'dekanat': 'DK204581',
+        'oqituvchi': 'TC309482',
+        'teacher': 'TC309482',
+        'mentor': 'MN408193',
+        'talaba': 'ST501824',
+        'student': 'ST501824'
+    }
+    target_username = alias_map.get(raw_user.lower(), raw_user)
+    result = await db.execute(
+        select(User).where(
+            (User.username == target_username) | 
+            (User.username == raw_user) |
+            (User.username == raw_user.upper())
+        )
+    )
     user = result.scalars().first()
     if not user or not verify_password(login_data.password, user.hashed_password):
         raise HTTPException(

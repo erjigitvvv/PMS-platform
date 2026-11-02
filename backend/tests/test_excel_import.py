@@ -108,7 +108,7 @@ class TestExcelImport:
         # We can verify by attempting to login with new users
         login_response1 = httpx.post(
             f"{BASE_URL}/auth/login",
-            json={"username": "yangitalaba_a", "password": "Yangi123!"},
+            json={"username": f"yangitalaba_a_{timestamp}", "password": "Yangi123!"},
             timeout=10.0
         )
         assert login_response1.status_code == 200, "Imported student should be able to login"

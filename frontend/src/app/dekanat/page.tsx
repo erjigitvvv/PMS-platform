@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import CollapsibleSidebar, { NavItem } from '@/components/CollapsibleSidebar';
+import { LayoutDashboard, BarChart3, Briefcase } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { 
   Building2, 
@@ -20,6 +22,15 @@ import {
   Check,
   ExternalLink
 } from 'lucide-react';
+
+const DEKANAT_NAV_ITEMS: NavItem[] = [
+  { id: 'monitor', label: 'Jonli Monitor', icon: LayoutDashboard },
+  { id: 'import', label: 'Talabalar & Excel', icon: FileSpreadsheet, badge: 'Excel' },
+  { id: 'contracts', label: 'Arizalar & Shartnomalar', icon: FileText, badge: '4 yangi' },
+  { id: 'partners', label: 'Hamkor Korxonalar', icon: Briefcase },
+  { id: 'reports', label: 'Universitet Hisoboti', icon: BarChart3 },
+  { id: 'settings', label: 'Sozlamalar & Muhr', icon: Settings },
+];
 
 export default function DekanatDashboard() {
   const router = useRouter();
@@ -92,23 +103,37 @@ export default function DekanatDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col antialiased text-zinc-900">
-      {/* Top Header */}
-      <header className="bg-white border-b border-zinc-200/80 sticky top-0 z-30 px-6 py-3.5">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <div className="min-h-screen bg-[#FAFAFA] flex flex-col md:flex-row antialiased text-zinc-900">
+      {/* Left Collapsible Animated Sidebar */}
+      <CollapsibleSidebar
+        role="OTM_STAFF"
+        roleTitle="Dekanat & Amaliyot Bo'limi"
+        userName="Alisher Qodirov"
+        userSub="Boshqarma Boshlig'i"
+        userBadge="DK204581"
+        items={DEKANAT_NAV_ITEMS}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onLogout={handleLogout}
+      />
+
+      {/* Main Content Area */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* Top Header */}
+        <header className="bg-white border-b border-zinc-200/80 px-6 py-3.5 hidden md:flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center space-x-3">
-            <img src="/tiu-logo.svg" alt="TIU" className="w-9 h-9 object-contain" />
-            <div>
-              <h1 className="text-sm font-bold text-zinc-900 leading-tight">Tashkent International University</h1>
-              <p className="text-[11px] text-zinc-400">OTM Dekanat & Amaliyot Bo'limi</p>
-            </div>
+            <h1 className="text-sm font-bold text-zinc-900">Tashkent International University</h1>
+            <span className="text-zinc-300">/</span>
+            <span className="text-xs text-zinc-500 font-medium">Dekanat & Amaliyot Boshqarmasi</span>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <div className="hidden sm:flex items-center space-x-2 bg-zinc-50 border border-zinc-200/60 px-3 py-1.5 rounded-xl text-xs">
-              <span className="font-semibold text-zinc-900">Jamshid Alimov</span>
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 bg-zinc-50 border border-zinc-200/60 px-3 py-1.5 rounded-xl text-xs">
+              <span className="font-semibold text-zinc-900">Alisher Qodirov</span>
               <span className="text-zinc-300">|</span>
-              <span className="text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded text-[10px] font-bold">DEKANAT / BO'LIM BOSHLIG'I</span>
+              <span className="text-blue-700 bg-blue-50 px-2 py-0.5 rounded font-mono text-[10px] font-bold border border-blue-200/60">
+                DK204581
+              </span>
             </div>
 
             <button 
@@ -119,75 +144,10 @@ export default function DekanatDashboard() {
               <span>Chiqish</span>
             </button>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Main Container */}
-      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex-1 flex flex-col md:flex-row gap-6">
-        {/* Sidebar */}
-        <aside className="w-full md:w-60 shrink-0">
-          <div className="bg-white border border-zinc-200/80 rounded-2xl p-2.5 shadow-sm space-y-1">
-            <button
-              onClick={() => setActiveTab('monitor')}
-              className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
-                activeTab === 'monitor' ? 'bg-zinc-900 text-white shadow-sm' : 'text-zinc-600 hover:bg-zinc-50'
-              }`}
-            >
-              <Building2 className="w-4 h-4" />
-              <span>Jonli Monitor</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('import')}
-              className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
-                activeTab === 'import' ? 'bg-zinc-900 text-white shadow-sm' : 'text-zinc-600 hover:bg-zinc-50'
-              }`}
-            >
-              <FileSpreadsheet className="w-4 h-4" />
-              <span>Talabalar & Excel</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('contracts')}
-              className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
-                activeTab === 'contracts' ? 'bg-zinc-900 text-white shadow-sm' : 'text-zinc-600 hover:bg-zinc-50'
-              }`}
-            >
-              <FileText className="w-4 h-4" />
-              <span>Arizalar & Shartnomalar</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('partners')}
-              className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
-                activeTab === 'partners' ? 'bg-zinc-900 text-white shadow-sm' : 'text-zinc-600 hover:bg-zinc-50'
-              }`}
-            >
-              <Building2 className="w-4 h-4" />
-              <span>Hamkor Korxonalar</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('reports')}
-              className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
-                activeTab === 'reports' ? 'bg-zinc-900 text-white shadow-sm' : 'text-zinc-600 hover:bg-zinc-50'
-              }`}
-            >
-              <Download className="w-4 h-4" />
-              <span>Universitet Hisoboti</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('settings')}
-              className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
-                activeTab === 'settings' ? 'bg-zinc-900 text-white shadow-sm' : 'text-zinc-600 hover:bg-zinc-50'
-              }`}
-            >
-              <Settings className="w-4 h-4" />
-              <span>Sozlamalar & Muhr</span>
-            </button>
-          </div>
-        </aside>
+        {/* Content Body */}
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-6xl w-full mx-auto space-y-6">
 
         {/* Content */}
         <main className="flex-1 space-y-6">
@@ -380,7 +340,7 @@ export default function DekanatDashboard() {
                           onClick={() => handleApproveContract(app.id)}
                           className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-medium hover:bg-emerald-700 shadow-sm"
                         >
-                          ✓ Tasdiqlash & Shartnoma Generatsiya
+                          Tasdiqlash & Shartnoma Generatsiya
                         </button>
                       ) : (
                         <div className="flex space-x-2">
@@ -461,7 +421,7 @@ export default function DekanatDashboard() {
                   className="inline-flex items-center space-x-2 px-4 py-2.5 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 shadow-sm"
                 >
                   <FileSpreadsheet className="w-4 h-4" />
-                  <span>📊 Yagona Yakuniy Hisobotni Excelga Yuklab Olish</span>
+                  <span>Yagona Yakuniy Hisobotni Excelga Yuklab Olish</span>
                 </button>
               </div>
 

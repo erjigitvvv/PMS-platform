@@ -21,15 +21,30 @@ import {
   HelpCircle,
   Phone,
   Lock,
-  ExternalLink
+  ExternalLink,
+  Briefcase,
+  BookOpen,
+  XCircle,
+  FileCheck,
+  LayoutDashboard
 } from 'lucide-react';
+import CollapsibleSidebar, { NavItem } from '@/components/CollapsibleSidebar';
+
+const STUDENT_NAV_ITEMS: NavItem[] = [
+  { id: 'overview', label: 'Bosh sahifa', icon: LayoutDashboard },
+  { id: 'vacancies', label: "Amaliyot o'rni", icon: Briefcase },
+  { id: 'logbook', label: 'Kundalik', icon: FileText, badge: 'Faol' },
+  { id: 'docs', label: 'Hujjatlar & Shartnoma', icon: FileCheck },
+  { id: 'grades', label: 'Davomat & Baholar', icon: Award },
+  { id: 'settings', label: 'Sozlamalar', icon: Settings },
+];
 
 export default function StudentDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'overview' | 'vacancies' | 'logbook' | 'docs' | 'grades' | 'settings'>('overview');
   
   // Student State
-  const [phone, setPhone] = useState('+998 90 123 45 67');
+  const [phone, setPhone] = useState('+998 90 555 55 55');
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [settingsSuccess, setSettingsSuccess] = useState<string | null>(null);
@@ -105,25 +120,39 @@ export default function StudentDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col antialiased text-zinc-900">
-      {/* Top Header */}
-      <header className="bg-white border-b border-zinc-200/80 sticky top-0 z-30 px-6 py-3.5">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <div className="min-h-screen bg-[#FAFAFA] flex flex-col md:flex-row antialiased text-zinc-900">
+      {/* Left Collapsible Animated Sidebar */}
+      <CollapsibleSidebar
+        role="STUDENT"
+        roleTitle="Talaba Amaliyot Portali"
+        userName="Bekzod Ergashev"
+        userSub="DI-202-22 | Dasturiy injiniring"
+        userBadge="ST501824"
+        items={STUDENT_NAV_ITEMS}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onLogout={handleLogout}
+      />
+
+      {/* Main Content Area */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* Top Header */}
+        <header className="bg-white border-b border-zinc-200/80 px-6 py-3.5 hidden md:flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center space-x-3">
-            <img src="/tiu-logo.svg" alt="TIU" className="w-9 h-9 object-contain" />
-            <div>
-              <h1 className="text-sm font-bold text-zinc-900 leading-tight">Tashkent International University</h1>
-              <p className="text-[11px] text-zinc-400">Talaba Amaliyot Portali</p>
-            </div>
+            <h1 className="text-sm font-bold text-zinc-900">Tashkent International University</h1>
+            <span className="text-zinc-300">/</span>
+            <span className="text-xs text-zinc-500 font-medium">Talaba Shaxsiy Kabineti</span>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <div className="hidden sm:flex items-center space-x-2 bg-zinc-50 border border-zinc-200/60 px-3 py-1.5 rounded-xl text-xs">
-              <span className="font-semibold text-zinc-900">Sardor Rahimov</span>
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 bg-zinc-50 border border-zinc-200/60 px-3 py-1.5 rounded-xl text-xs">
+              <span className="font-semibold text-zinc-900">Bekzod Ergashev</span>
               <span className="text-zinc-300">|</span>
               <span className="text-zinc-500 font-mono">DI-202-22</span>
               <span className="text-zinc-300">|</span>
-              <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-mono text-[10px] font-bold">STD-2026-0001</span>
+              <span className="text-violet-700 bg-violet-50 px-2 py-0.5 rounded font-mono text-[10px] font-bold border border-violet-200/60">
+                ST501824
+              </span>
             </div>
 
             <button 
@@ -134,78 +163,10 @@ export default function StudentDashboard() {
               <span>Chiqish</span>
             </button>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Main Container with Sidebar */}
-      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex-1 flex flex-col md:flex-row gap-6">
-        {/* Left Sidebar */}
-        <aside className="w-full md:w-60 shrink-0">
-          <div className="bg-white border border-zinc-200/80 rounded-2xl p-2.5 shadow-sm space-y-1">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
-                activeTab === 'overview' ? 'bg-zinc-900 text-white shadow-sm' : 'text-zinc-600 hover:bg-zinc-50'
-              }`}
-            >
-              <Building2 className="w-4 h-4" />
-              <span>Bosh sahifa</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('vacancies')}
-              className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
-                activeTab === 'vacancies' ? 'bg-zinc-900 text-white shadow-sm' : 'text-zinc-600 hover:bg-zinc-50'
-              }`}
-            >
-              <Building2 className="w-4 h-4" />
-              <span>Amaliyot o'rni</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('logbook')}
-              className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
-                activeTab === 'logbook' ? 'bg-zinc-900 text-white shadow-sm' : 'text-zinc-600 hover:bg-zinc-50'
-              }`}
-            >
-              <FileText className="w-4 h-4" />
-              <span>Kundalik</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('docs')}
-              className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
-                activeTab === 'docs' ? 'bg-zinc-900 text-white shadow-sm' : 'text-zinc-600 hover:bg-zinc-50'
-              }`}
-            >
-              <Download className="w-4 h-4" />
-              <span>Hujjatlar & Shartnoma</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('grades')}
-              className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
-                activeTab === 'grades' ? 'bg-zinc-900 text-white shadow-sm' : 'text-zinc-600 hover:bg-zinc-50'
-              }`}
-            >
-              <Award className="w-4 h-4" />
-              <span>Davomat & Baholar</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('settings')}
-              className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
-                activeTab === 'settings' ? 'bg-zinc-900 text-white shadow-sm' : 'text-zinc-600 hover:bg-zinc-50'
-              }`}
-            >
-              <Settings className="w-4 h-4" />
-              <span>Sozlamalar</span>
-            </button>
-          </div>
-        </aside>
-
-        {/* Content Area */}
-        <main className="flex-1 space-y-6">
+        {/* Content Body */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-6xl w-full mx-auto space-y-6">
           {notification && (
             <div className="bg-emerald-50 border border-emerald-200/80 rounded-2xl p-4 flex items-center space-x-3 text-emerald-800 text-xs shadow-sm">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -220,8 +181,9 @@ export default function StudentDashboard() {
               <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm space-y-5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <span className="text-[11px] font-semibold tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full uppercase">
-                      Faol Amaliyot
+                    <span className="text-[11px] font-semibold tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full uppercase border border-emerald-200/60 inline-flex items-center space-x-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600 inline mr-1" />
+                      <span>Faol Amaliyot</span>
                     </span>
                     <h2 className="text-xl font-bold text-zinc-900 mt-2">Uzum Technologies MCHJ</h2>
                     <p className="text-xs text-zinc-500 mt-0.5">Junior Backend Developer amaliyotchi o'rni</p>
@@ -248,35 +210,82 @@ export default function StudentDashboard() {
                   </div>
                   <div>
                     <span className="text-[11px] text-zinc-400">Amaliyot Muddati:</span>
-                    <p className="text-xs font-semibold text-zinc-900 mt-0.5">42 / 60 kun bajarildi</p>
-                    <div className="w-full bg-zinc-100 rounded-full h-1.5 mt-1.5">
-                      <div className="bg-zinc-900 h-1.5 rounded-full" style={{ width: '70%' }}></div>
-                    </div>
+                    <p className="text-xs font-semibold text-zinc-900 mt-0.5">2026-11-01 dan 2026-12-15 gacha</p>
+                    <p className="text-[11px] text-emerald-600 font-medium">Qolgan vaqt: 44 kun</p>
                   </div>
                 </div>
               </div>
 
-              {/* Quick Info Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Progress & Quick Stats */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm">
-                  <span className="text-xs text-zinc-500">Davomat ko'rsatkichi</span>
-                  <p className="text-2xl font-bold text-zinc-900 mt-2">98.5%</p>
-                  <p className="text-[11px] text-emerald-600 mt-1">A'lo darajada</p>
+                  <div className="flex items-center justify-between text-zinc-400 mb-2">
+                    <span className="text-xs font-medium">To'ldirilgan hisobotlar</span>
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <p className="text-2xl font-bold text-zinc-900">3 / 45</p>
+                  <p className="text-[11px] text-zinc-500 mt-1">Har kuni soat 18:00 gacha</p>
                 </div>
+
                 <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm">
-                  <span className="text-xs text-zinc-500">Tasdiqlangan kundaliklar</span>
-                  <p className="text-2xl font-bold text-zinc-900 mt-2">{logs.filter(l => l.status === 'APPROVED').length} ta</p>
-                  <p className="text-[11px] text-zinc-400 mt-1">Barcha topshirilganlar</p>
+                  <div className="flex items-center justify-between text-zinc-400 mb-2">
+                    <span className="text-xs font-medium">Davomat ko'rsatkichi</span>
+                    <CalendarCheck className="w-4 h-4" />
+                  </div>
+                  <p className="text-2xl font-bold text-emerald-600">100%</p>
+                  <p className="text-[11px] text-zinc-500 mt-1">1 kun Kech (0.75x hisobida)</p>
                 </div>
+
                 <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm">
-                  <span className="text-xs text-zinc-500">3 Tomonlama Shartnoma</span>
-                  <p className="text-xs font-semibold text-emerald-700 mt-2">Tasdiqlangan (PDF tayyor)</p>
+                  <div className="flex items-center justify-between text-zinc-400 mb-2">
+                    <span className="text-xs font-medium">Shartnoma holati</span>
+                    <Download className="w-4 h-4" />
+                  </div>
+                  <p className="text-sm font-bold text-zinc-900">AMAL-2026-0041</p>
+                  <p className="text-[11px] text-emerald-600 mt-1">3 tomonlama tasdiqlangan</p>
+                </div>
+
+                <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between text-zinc-400 mb-2">
+                    <span className="text-xs font-medium">Joriy ECTS Bahosi</span>
+                    <Award className="w-4 h-4" />
+                  </div>
+                  <p className="text-2xl font-bold text-zinc-900">94 / 100</p>
+                  <p className="text-[11px] text-zinc-500 mt-1">"A" (A'lo daraja)</p>
+                </div>
+              </div>
+
+              {/* Recent Logs Table */}
+              <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-zinc-900">So'nggi Kundalik Yozuvlari</h3>
                   <button 
-                    onClick={() => setActiveTab('docs')}
-                    className="mt-2 text-xs text-zinc-900 font-medium underline hover:text-zinc-700"
+                    onClick={() => setActiveTab('logbook')} 
+                    className="text-xs text-zinc-500 hover:text-zinc-900 font-medium"
                   >
-                    Yuklab olish &rarr;
+                    Barchasini ko'rish →
                   </button>
+                </div>
+
+                <div className="divide-y divide-zinc-100">
+                  {logs.slice(0, 3).map((log) => (
+                    <div key={log.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs font-mono font-semibold text-zinc-900">{log.date}</span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            log.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                          }`}>
+                            {log.status === 'APPROVED' ? 'Tasdiqlangan' : 'Kutilmoqda'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-zinc-600">{log.tasks}</p>
+                      </div>
+                      <span className="text-[11px] text-zinc-400 italic sm:text-right shrink-0">
+                        {log.feedback}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -285,94 +294,108 @@ export default function StudentDashboard() {
           {/* TAB 2: VACANCIES */}
           {activeTab === 'vacancies' && (
             <div className="space-y-6">
-              <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm">
-                <h3 className="text-sm font-bold text-zinc-900 mb-1">Hamkor Korxonalar Vakansiyalari</h3>
-                <p className="text-xs text-zinc-500 mb-4">TIU bilan rasmiy memorandum tuzilgan tashkilotlar kvotalari</p>
+              <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-900">Hamkor Korxonalar Vakansiyalari</h3>
+                  <p className="text-xs text-zinc-500 mt-1">OTM bilan 3 tomonlama rasmiy shartnomaga ega hamkor kompaniyalar</p>
+                </div>
 
-                <div className="space-y-3">
-                  {[
-                    { name: 'Uzum Technologies MCHJ', role: 'Junior Backend Developer', quota: '3 o\'rin', status: 'TANLANGAN' },
-                    { name: 'IT Park Uzbekistan', role: 'Frontend React/Next.js Intern', quota: '5 o\'rin', status: 'Ochiq' },
-                    { name: 'Click MCHJ', role: 'QA & Mobile Testing Intern', quota: '2 o\'rin', status: 'Ochiq' },
-                    { name: 'Aloqabank ATB', role: 'FinTech Database Intern', quota: '4 o\'rin', status: 'Ochiq' }
-                  ].map((v, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-zinc-200/60 bg-zinc-50/50">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Vacancy 1 */}
+                  <div className="border border-zinc-200/80 rounded-2xl p-5 hover:border-zinc-300 transition-all space-y-4">
+                    <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="text-xs font-bold text-zinc-900">{v.name}</h4>
-                        <p className="text-xs text-zinc-600 mt-0.5">{v.role}</p>
-                        <span className="text-[11px] text-zinc-400">Kvota: {v.quota}</span>
+                        <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                          Hamkor Korxona
+                        </span>
+                        <h4 className="text-sm font-bold text-zinc-900 mt-2">Junior Backend Developer</h4>
+                        <p className="text-xs text-zinc-600 font-medium">Uzum Technologies MCHJ</p>
                       </div>
-                      <div>
-                        {v.status === 'TANLANGAN' ? (
-                          <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-semibold">
-                            Siz biriktirilgansiz
-                          </span>
-                        ) : (
-                          <button className="px-3 py-1.5 bg-zinc-900 text-white rounded-lg text-xs font-medium hover:bg-zinc-800">
-                            Ariza topshirish
-                          </button>
-                        )}
+                      <div className="w-10 h-10 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-center font-bold text-zinc-700 text-xs">
+                        UZUM
                       </div>
                     </div>
-                  ))}
+                    <p className="text-xs text-zinc-500">Python, FastAPI, PostgreSQL va Git bilan ishlash ko'nikmalari talab qilinadi.</p>
+                    <div className="flex items-center justify-between pt-2 border-t border-zinc-100 text-xs">
+                      <span className="text-zinc-400 font-mono">Kvota: 3 / 5 o'rin</span>
+                      <span className="text-emerald-700 font-semibold">Ariza qabul qilingan</span>
+                    </div>
+                  </div>
+
+                  {/* Vacancy 2 */}
+                  <div className="border border-zinc-200/80 rounded-2xl p-5 hover:border-zinc-300 transition-all space-y-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                          Hamkor Korxona
+                        </span>
+                        <h4 className="text-sm font-bold text-zinc-900 mt-2">Frontend Developer intern</h4>
+                        <p className="text-xs text-zinc-600 font-medium">IT Park Uzbekistan</p>
+                      </div>
+                      <div className="w-10 h-10 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-center font-bold text-zinc-700 text-xs">
+                        ITP
+                      </div>
+                    </div>
+                    <p className="text-xs text-zinc-500">React, Next.js, Tailwind CSS va zamonaviy veb texnologiyalari.</p>
+                    <div className="flex items-center justify-between pt-2 border-t border-zinc-100 text-xs">
+                      <span className="text-zinc-400 font-mono">Kvota: 5 / 8 o'rin</span>
+                      <button className="text-zinc-900 font-medium hover:underline">Ariza topshirish →</button>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              {/* Custom Company Submission */}
-              <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm">
-                <h3 className="text-sm font-bold text-zinc-900 mb-1">Mustaqil Korxona Taklif Qilish</h3>
-                <p className="text-xs text-zinc-500 mb-4">Agar amaliyotni o'zingiz topgan boshqa korxonada o'tamoqchi bo'lsangiz rekvizitlarni kiriting:</p>
+                {/* Custom Company Option */}
+                <div className="pt-6 border-t border-zinc-100">
+                  <h4 className="text-xs font-bold text-zinc-900 mb-1">O'z Korxonangizni Kiritish (Individual tanlov)</h4>
+                  <p className="text-xs text-zinc-500 mb-4">Agar boshqa kompaniyada amaliyot o'tamoqchi bo'lsangiz, rekvizitlarini kiriting:</p>
 
-                <form onSubmit={(e) => { e.preventDefault(); setApplicationSubmitted(true); }} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">Korxona nomi</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl">
                     <input 
                       type="text" 
-                      placeholder="MCHJ yoki AJ nomi"
+                      placeholder="Korxona to'liq nomi" 
                       value={customCompany.name}
                       onChange={(e) => setCustomCompany({ ...customCompany, name: e.target.value })}
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 bg-white" 
+                      className="px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-white"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">STIR (TIN) raqami</label>
                     <input 
                       type="text" 
-                      placeholder="9 xonali STIR"
+                      placeholder="STIR / INN (9 xonali)" 
                       value={customCompany.tin}
                       onChange={(e) => setCustomCompany({ ...customCompany, tin: e.target.value })}
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 bg-white" 
+                      className="px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-white font-mono"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">Rahbar F.I.SH</label>
                     <input 
                       type="text" 
-                      placeholder="Direktor ismi"
+                      placeholder="Rahbar F.I.SH" 
                       value={customCompany.director}
                       onChange={(e) => setCustomCompany({ ...customCompany, director: e.target.value })}
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 bg-white" 
+                      className="px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-white"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">Aloqa telefoni</label>
                     <input 
                       type="text" 
-                      placeholder="+998..."
+                      placeholder="Telefon raqami" 
                       value={customCompany.phone}
                       onChange={(e) => setCustomCompany({ ...customCompany, phone: e.target.value })}
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 bg-white" 
+                      className="px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-white"
                     />
                   </div>
-                  <div className="sm:col-span-2 pt-2">
-                    <button type="submit" className="bg-zinc-900 text-white px-5 py-2.5 rounded-xl text-xs font-medium hover:bg-zinc-800">
-                      Dekanat tasdiqlashiga yuborish
-                    </button>
-                    {applicationSubmitted && (
-                      <span className="ml-3 text-xs text-emerald-600 font-medium">Ariza dekanatga yuborildi!</span>
-                    )}
-                  </div>
-                </form>
+                  <button 
+                    onClick={() => {
+                      setApplicationSubmitted(true);
+                      setTimeout(() => setApplicationSubmitted(false), 4000);
+                    }}
+                    className="mt-3 px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-all shadow-sm"
+                  >
+                    Dekanatga Tasdiqlash Uchun Yuborish
+                  </button>
+
+                  {applicationSubmitted && (
+                    <p className="text-xs text-emerald-600 mt-2 font-medium flex items-center">
+                      <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                      <span>Individual korxona arizasi dekanatga yuborildi!</span>
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -381,77 +404,87 @@ export default function StudentDashboard() {
           {activeTab === 'logbook' && (
             <div className="space-y-6">
               {/* Daily Log Form */}
-              <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm">
-                <h3 className="text-sm font-bold text-zinc-900 mb-1">Bugungi Amaliyot Kundaligini To'ldirish</h3>
-                <p className="text-xs text-zinc-500 mb-4">Sana: {new Date().toISOString().split('T')[0]} (Bugun)</p>
-
-                <form onSubmit={handleAddLog} className="space-y-4">
+              <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">
-                      Bugun korxonada qanday amaliy vazifalarni bajardingiz?
+                    <h3 className="text-sm font-bold text-zinc-900">Bugungi Amaliyot Kundaligini To'ldirish</h3>
+                    <p className="text-xs text-zinc-500 mt-0.5">Sana: {new Date().toISOString().split('T')[0]} | Topshirish vaqti: 18:00 gacha</p>
+                  </div>
+                  <span className="text-[11px] font-mono bg-zinc-100 text-zinc-600 px-2.5 py-1 rounded-lg">
+                    Kunlik hisobot
+                  </span>
+                </div>
+
+                <form onSubmit={handleAddLog} className="space-y-4 pt-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-700 mb-1.5">
+                      Bugun bajarilgan amaliy ishlar va vazifalar:
                     </label>
                     <textarea
-                      rows={3}
                       required
+                      rows={3}
                       value={newTasks}
                       onChange={(e) => setNewTasks(e.target.value)}
-                      placeholder="Bajarilgan ishlar va texnik topshiriqlar haqida batafsil yozing..."
-                      className="w-full text-xs p-3 rounded-xl border border-zinc-200 bg-white focus:outline-none focus:border-zinc-900 text-zinc-900"
+                      placeholder="Bugun korxonada qanday topshiriqlar ustida ishladingiz? Aniq va batafsil yozing..."
+                      className="w-full p-3 text-xs rounded-xl border border-zinc-200 bg-white placeholder-zinc-400 focus:outline-none focus:border-zinc-900 transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">
-                      Ushbu vazifani bajarishda qanday yangi bilim yoki ko'nikmalarni o'rgandingiz?
+                    <label className="block text-xs font-semibold text-zinc-700 mb-1.5">
+                      O'rganilgan yangi texnologiyalar va ko'nikmalar:
                     </label>
                     <input
                       type="text"
                       value={newSkills}
                       onChange={(e) => setNewSkills(e.target.value)}
-                      placeholder="Masalan: Docker, PostgreSQL tranzaksiyalari, Code review..."
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 bg-white focus:outline-none focus:border-zinc-900 text-zinc-900"
+                      placeholder="Masalan: Docker, FastAPI Middleware, Git rebase"
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 bg-white placeholder-zinc-400 focus:outline-none focus:border-zinc-900 transition-all"
                     />
                   </div>
 
                   <div className="flex items-center justify-between pt-2">
-                    <label className="cursor-pointer inline-flex items-center space-x-2 text-xs text-zinc-600 hover:text-zinc-900 border border-zinc-200 px-3 py-2 rounded-xl bg-zinc-50">
-                      <Upload className="w-3.5 h-3.5" />
-                      <span>Ishdan rasm/fayl biriktirish</span>
-                      <input type="file" className="hidden" />
-                    </label>
+                    <div className="flex items-center space-x-2 text-zinc-400 text-xs">
+                      <Upload className="w-4 h-4" />
+                      <span>Ixtiyoriy: Skrinshot yoki foto-isbot biriktirish</span>
+                    </div>
 
                     <button
                       type="submit"
-                      className="inline-flex items-center space-x-2 bg-zinc-900 text-white px-5 py-2.5 rounded-xl text-xs font-medium hover:bg-zinc-800 transition-all shadow-sm"
+                      className="px-5 py-2.5 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-all shadow-sm flex items-center space-x-2"
                     >
                       <Send className="w-3.5 h-3.5" />
-                      <span>Mentorga yuborish</span>
+                      <span>Mentorga Tasdiqlashga Yuborish</span>
                     </button>
                   </div>
                 </form>
               </div>
 
               {/* Log History */}
-              <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm">
-                <h3 className="text-sm font-bold text-zinc-900 mb-4">O'tgan Kunlar Tarixi</h3>
+              <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm space-y-4">
+                <h3 className="text-sm font-bold text-zinc-900">O'tgan Kunlar Tarixi</h3>
+
                 <div className="space-y-3">
                   {logs.map((log) => (
-                    <div key={log.id} className="p-4 rounded-xl border border-zinc-200/60 bg-zinc-50/40 space-y-2">
+                    <div key={log.id} className="p-4 rounded-xl border border-zinc-200/70 bg-zinc-50/50 space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono font-semibold text-zinc-900">{log.date}</span>
-                        <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
-                          log.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' : 'bg-amber-50 text-amber-700 border border-amber-200/60'
-                        }`}>
-                          {log.status === 'APPROVED' ? 'Tasdiqlangan' : 'Kutilmoqda'}
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs font-mono font-bold text-zinc-900">{log.date}</span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            log.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                          }`}>
+                            {log.status === 'APPROVED' ? 'Tasdiqlangan' : 'Tekshiruvda'}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-zinc-400 font-mono">ID: #{log.id}</span>
                       </div>
-                      <p className="text-xs text-zinc-800">{log.tasks}</p>
-                      <p className="text-[11px] text-zinc-400">Ko'nikmalar: {log.skills}</p>
-                      {log.feedback && (
-                        <p className="text-[11px] text-zinc-500 italic bg-white p-2 rounded-lg border border-zinc-100">
-                          Mentor fikri: "{log.feedback}"
-                        </p>
-                      )}
+
+                      <p className="text-xs text-zinc-700">{log.tasks}</p>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-2 border-t border-zinc-200/60 text-[11px] text-zinc-500 gap-1">
+                        <span>Ko'nikmalar: <strong className="text-zinc-700">{log.skills}</strong></span>
+                        <span className="italic text-zinc-400">Izoh: {log.feedback}</span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -459,52 +492,66 @@ export default function StudentDashboard() {
             </div>
           )}
 
-          {/* TAB 4: DOCS */}
+          {/* TAB 4: DOCS & CONTRACT */}
           {activeTab === 'docs' && (
             <div className="space-y-6">
-              <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm space-y-4">
-                <h3 className="text-sm font-bold text-zinc-900">Rasmiy Hujjatlar va 3 Tomonlama Shartnoma</h3>
-                <p className="text-xs text-zinc-500">QR-kodli rasmiy hujjatlar universitet va korxona tomonidan tasdiqlangan.</p>
+              <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-900">Rasmiy Hujjatlar va 3 Tomonlama Shartnoma</h3>
+                  <p className="text-xs text-zinc-500 mt-1">OTM, Korxona va Talaba o'rtasida tasdiqlangan yuridik shartnoma</p>
+                </div>
 
-                <div className="space-y-3 pt-2">
-                  <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-200/60 bg-zinc-50/50">
-                    <div>
-                      <h4 className="text-xs font-bold text-zinc-900">3 Tomonlama Rasmiy Shartnoma (OTM, Talaba, Uzum Tech)</h4>
-                      <p className="text-[11px] text-zinc-400 font-mono mt-0.5">Raqam: AMAL-2026-0042 • QR-Hash: 4a9f...e21b</p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <button className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-zinc-900 text-white rounded-lg text-xs font-medium hover:bg-zinc-800">
-                        <Download className="w-3.5 h-3.5" />
-                        <span>PDF Yuklab olish</span>
-                      </button>
-                      <button className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-white border border-zinc-200 text-zinc-700 rounded-lg text-xs font-medium hover:bg-zinc-50">
-                        <span>Word (.docx)</span>
-                      </button>
-                    </div>
+                {/* Contract Card */}
+                <div className="border border-zinc-200/80 rounded-2xl p-5 bg-zinc-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60">
+                      Raqam: AMAL-2026-0041
+                    </span>
+                    <h4 className="text-sm font-bold text-zinc-900 mt-1">Uch Tomonlama Amaliyot Shartnomasi</h4>
+                    <p className="text-xs text-zinc-500">TIU Universiteti — Uzum Technologies MCHJ — Bekzod Ergashev</p>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-200/60 bg-zinc-50/50">
-                    <div>
-                      <h4 className="text-xs font-bold text-zinc-900">Universitet Rasmiy Amaliyot Yo'llanmasi</h4>
-                      <p className="text-[11px] text-zinc-400 font-mono mt-0.5">Rektorat buyrug'i: B-104/26</p>
-                    </div>
-                    <button className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-zinc-900 text-white rounded-lg text-xs font-medium hover:bg-zinc-800">
+                  <div className="flex items-center space-x-2">
+                    <a 
+                      href="/api/v1/applications/contract/download-pdf" 
+                      target="_blank"
+                      className="inline-flex items-center space-x-2 bg-zinc-900 text-white px-3.5 py-2 rounded-xl text-xs font-medium hover:bg-zinc-800 transition-all shadow-sm"
+                    >
                       <Download className="w-3.5 h-3.5" />
-                      <span>Yo'llanmani olish (PDF)</span>
-                    </button>
+                      <span>PDF Yuklab Olish</span>
+                    </a>
+                    <a 
+                      href="/api/v1/applications/contract/download-docx" 
+                      target="_blank"
+                      className="inline-flex items-center space-x-2 bg-white border border-zinc-200 text-zinc-700 px-3.5 py-2 rounded-xl text-xs font-medium hover:bg-zinc-50 transition-all shadow-sm"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>DOCX (Word)</span>
+                    </a>
                   </div>
                 </div>
-              </div>
 
-              {/* Upload Final Report */}
-              <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm">
-                <h3 className="text-sm font-bold text-zinc-900 mb-1">Yakuniy Amaliyot Hisoboti Topshirish</h3>
-                <p className="text-xs text-zinc-500 mb-4">Amaliyot yakunida tayyorlangan hisobot referat faylini (.pdf formatda) yuklang:</p>
-
-                <div className="border-2 border-dashed border-zinc-200 rounded-2xl p-6 text-center hover:border-zinc-400 transition-colors cursor-pointer">
-                  <Upload className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
-                  <p className="text-xs font-semibold text-zinc-800">Faylni tanlang yoki sudrab olib keling</p>
-                  <p className="text-[11px] text-zinc-400 mt-1">Faqat PDF formatda, maksimal 15 MB</p>
+                {/* Document Requirements Checklist */}
+                <div className="space-y-3 pt-2">
+                  <h4 className="text-xs font-bold text-zinc-900">Talab Qilinadigan Yakuniy Hujjatlar:</h4>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center space-x-2 text-zinc-700">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>3 tomonlama shartnoma (Imzolangan va PDF shaklda)</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-zinc-700">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Elektron amaliyot kundaligi (45 kunlik to'liq yozuvlar)</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-zinc-700">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Korxona mentorining tavsifnomasi va 0-5 ballik bahosi</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-zinc-500">
+                      <Clock className="w-4 h-4 text-amber-500 shrink-0" />
+                      <span>Yakuniy amaliyot hisoboti va kafedradagi himoya (Amaliyot so'ngida)</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -519,43 +566,64 @@ export default function StudentDashboard() {
                 {/* Score Big Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="p-4 rounded-xl border border-zinc-200/60 bg-zinc-50/50">
-                    <span className="text-xs text-zinc-500">🏢 Korxona Mentori Bahosi:</span>
+                    <span className="text-xs text-zinc-500 flex items-center space-x-1.5">
+                      <Briefcase className="w-3.5 h-3.5 text-zinc-400" />
+                      <span>Korxona Mentori Bahosi:</span>
+                    </span>
                     <p className="text-2xl font-bold text-zinc-900 mt-2">48 / 50</p>
                     <p className="text-[11px] text-zinc-500 mt-1">Baho: 4.8 / 5.0 (A'lo)</p>
                   </div>
 
                   <div className="p-4 rounded-xl border border-zinc-200/60 bg-zinc-50/50">
-                    <span className="text-xs text-zinc-500">👨‍🏫 OTM Kafedra Bahosi:</span>
+                    <span className="text-xs text-zinc-500 flex items-center space-x-1.5">
+                      <BookOpen className="w-3.5 h-3.5 text-zinc-400" />
+                      <span>OTM Kafedra Bahosi:</span>
+                    </span>
                     <p className="text-2xl font-bold text-zinc-900 mt-2">46 / 50</p>
                     <p className="text-[11px] text-zinc-500 mt-1">Himoya komissiyasi xulosasi</p>
                   </div>
 
                   <div className="p-4 rounded-xl border border-emerald-200/80 bg-emerald-50/40">
-                    <span className="text-xs text-emerald-800 font-semibold">🏆 JAMI NATIJA (ECTS):</span>
+                    <span className="text-xs text-emerald-800 font-semibold flex items-center space-x-1.5">
+                      <Award className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>JAMI NATIJA (ECTS):</span>
+                    </span>
                     <p className="text-2xl font-bold text-emerald-900 mt-2">94 / 100 ball</p>
                     <p className="text-xs font-bold text-emerald-700 mt-1">"A" (A'lo daraja)</p>
                   </div>
                 </div>
 
-                {/* Attendance Breakdown */}
+                {/* Attendance Breakdown (Pure Vector Icons) */}
                 <div className="pt-4 border-t border-zinc-100">
                   <h4 className="text-xs font-bold text-zinc-900 mb-3">Davomat Taqvimi</h4>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                     <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200/60">
                       <p className="text-lg font-bold text-emerald-800">41 kun</p>
-                      <p className="text-[11px] text-emerald-600">🟢 Kelgan (1.0x)</p>
+                      <div className="flex items-center justify-center space-x-1 text-[11px] text-emerald-600 font-medium mt-0.5">
+                        <CheckCircle2 className="w-3 h-3" />
+                        <span>Kelgan (1.0x)</span>
+                      </div>
                     </div>
                     <div className="p-3 bg-amber-50 rounded-xl border border-amber-200/60">
                       <p className="text-lg font-bold text-amber-800">1 kun</p>
-                      <p className="text-[11px] text-amber-600">🟡 Kech kelgan (0.75x)</p>
+                      <div className="flex items-center justify-center space-x-1 text-[11px] text-amber-600 font-medium mt-0.5">
+                        <Clock className="w-3 h-3" />
+                        <span>Kech kelgan (0.75x)</span>
+                      </div>
                     </div>
                     <div className="p-3 bg-rose-50 rounded-xl border border-rose-200/60">
                       <p className="text-lg font-bold text-rose-800">0 kun</p>
-                      <p className="text-[11px] text-rose-600">🔴 Kelmagan (0.0x)</p>
+                      <div className="flex items-center justify-center space-x-1 text-[11px] text-rose-600 font-medium mt-0.5">
+                        <XCircle className="w-3 h-3" />
+                        <span>Kelmagan (0.0x)</span>
+                      </div>
                     </div>
                     <div className="p-3 bg-blue-50 rounded-xl border border-blue-200/60">
                       <p className="text-lg font-bold text-blue-800">0 kun</p>
-                      <p className="text-[11px] text-blue-600">🔵 Sababli (0.5x)</p>
+                      <div className="flex items-center justify-center space-x-1 text-[11px] text-blue-600 font-medium mt-0.5">
+                        <HelpCircle className="w-3 h-3" />
+                        <span>Sababli (0.5x)</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -563,86 +631,93 @@ export default function StudentDashboard() {
             </div>
           )}
 
-          {/* TAB 6: SETTINGS (Simplified as approved by PO) */}
+          {/* TAB 6: SETTINGS */}
           {activeTab === 'settings' && (
             <div className="space-y-6">
               <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm space-y-6">
                 <div>
-                  <h3 className="text-sm font-bold text-zinc-900">Shaxsiy Sozlamalar</h3>
-                  <p className="text-xs text-zinc-500 mt-0.5">Telefon raqamingiz, parolingiz va Telegram boti bilan aloqa sozlamalari</p>
+                  <h3 className="text-sm font-bold text-zinc-900">Shaxsiy Profil va Xavfsizlik Sozlamalari</h3>
+                  <p className="text-xs text-zinc-500 mt-1">Aloqa ma'lumotlari va tizimga kirish parolini yangilash</p>
                 </div>
 
                 {settingsSuccess && (
-                  <div className="bg-emerald-50 border border-emerald-200/80 rounded-xl p-3 text-emerald-800 text-xs">
-                    {settingsSuccess}
+                  <div className="bg-emerald-50 border border-emerald-200/80 rounded-xl p-3 flex items-center space-x-2 text-emerald-800 text-xs">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{settingsSuccess}</span>
                   </div>
                 )}
 
-                <form onSubmit={handleSaveSettings} className="space-y-4 max-w-md">
+                <form onSubmit={handleSaveSettings} className="space-y-4 max-w-lg">
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">Telefon Raqamingiz</label>
+                    <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                      F.I.SH (O'zgartirib bo'lmaydi):
+                    </label>
+                    <input
+                      type="text"
+                      disabled
+                      value="Bekzod Ergashev"
+                      className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-zinc-100 text-zinc-500 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                      Talaba ID Raqami:
+                    </label>
+                    <input
+                      type="text"
+                      disabled
+                      value="ST501824"
+                      className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-zinc-100 text-zinc-500 font-mono font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                      Bog'lanish telefoni:
+                    </label>
                     <div className="relative">
-                      <Phone className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
-                      <input 
-                        type="text" 
-                        required
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+                        <Phone className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="text"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-900"
+                        className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-zinc-200 bg-white text-zinc-900"
                       />
                     </div>
-                    <p className="text-[11px] text-zinc-400 mt-1">Korxona mentori siz bilan shu raqam orqali bog'lanadi</p>
                   </div>
 
-                  <div className="pt-2 border-t border-zinc-100">
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">Joriy Parol</label>
-                    <input 
-                      type="password" 
-                      placeholder="Eski parolingiz"
-                      value={oldPassword}
-                      onChange={(e) => setOldPassword(e.target.value)}
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-900"
-                    />
+                  <div className="pt-2 border-t border-zinc-100 space-y-3">
+                    <h4 className="text-xs font-bold text-zinc-900">Parolni Yangilash</h4>
+                    <div>
+                      <input
+                        type="password"
+                        placeholder="Eski parol"
+                        value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                        className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-white text-zinc-900"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="password"
+                        placeholder="Yangi parol"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-white text-zinc-900"
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">Yangi Parol</label>
-                    <input 
-                      type="password" 
-                      placeholder="Kamida 6 ta belgi"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-900"
-                    />
-                  </div>
-
-                  <button 
+                  <button
                     type="submit"
-                    className="bg-zinc-900 text-white px-5 py-2.5 rounded-xl text-xs font-medium hover:bg-zinc-800 shadow-sm"
+                    className="px-5 py-2.5 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-all shadow-sm"
                   >
-                    O'zgarishlarni saqlash
+                    O'zgarishlarni Saqlash
                   </button>
                 </form>
-
-                {/* Telegram Bot Sync Card */}
-                <div className="pt-6 border-t border-zinc-100">
-                  <h4 className="text-xs font-bold text-zinc-900 mb-2">Telegram Bot Integratsiyasi</h4>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-zinc-200/60 bg-zinc-50/50 gap-3">
-                    <div>
-                      <p className="text-xs font-semibold text-zinc-900">@tiupm_bot rasmiy boti</p>
-                      <p className="text-[11px] text-zinc-500 mt-0.5">Kundalik hisobotlarni to'g'ridan-to'g'ri Telegramdan yuboring</p>
-                    </div>
-                    <a 
-                      href="https://t.me/tiupm_bot" 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className="inline-flex items-center space-x-1.5 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-medium hover:bg-blue-700 transition-colors shadow-sm"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      <span>Telegramni Ulash</span>
-                    </a>
-                  </div>
-                </div>
               </div>
             </div>
           )}
