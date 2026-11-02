@@ -308,11 +308,11 @@ export default function CollapsibleSidebar({
           </button>
 
           <div className="flex flex-col items-center w-full">
-            <div className={`${isCollapsed ? 'h-10 w-10' : 'h-14 sm:h-16 w-auto'} flex items-center justify-center shrink-0 mb-2 transition-all`}>
+            <div className={`${isCollapsed ? 'h-10 w-10' : 'h-20 sm:h-24 w-auto'} flex items-center justify-center shrink-0 mb-2 transition-all mx-auto`}>
               <img src="/tiu-official-logo.png" alt="Tashkent International University" className="h-full w-full object-contain" />
             </div>
             {!isCollapsed && (
-              <div className="transition-all duration-300 w-full px-1">
+              <div className="transition-all duration-300 w-full px-1 text-center">
                 <h2 className="text-xs font-bold text-zinc-900 tracking-tight leading-snug">Tashkent International University</h2>
                 <p className="text-[10px] text-zinc-500 font-medium mt-0.5">Amaliyot Boshqaruv Portali</p>
               </div>
