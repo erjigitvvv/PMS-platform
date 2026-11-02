@@ -1433,7 +1433,8 @@ export default function DekanatDashboard() {
                               tin: pr.tin,
                               dir: pr.dir,
                               phone: pr.phone,
-                              address: pr.address
+                              address: pr.address,
+                              logoUrl: pr.logoUrl || ''
                             });
                             // Remove old and open modal to edit
                             setPartners(partners.filter(p => p.id !== pr.id));
