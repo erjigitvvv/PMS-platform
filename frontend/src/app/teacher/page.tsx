@@ -27,15 +27,22 @@ import CollapsibleSidebar, { NavItem } from '@/components/CollapsibleSidebar';
 const TEACHER_NAV_ITEMS: NavItem[] = [
   { id: 'overview', label: 'Monitoring Paneli', icon: LayoutDashboard },
   { id: 'students', label: 'Talabalarim', icon: Users, badge: '18' },
-  { id: 'logbooks', label: 'Kundaliklar Nazorati', icon: FileText },
+  {
+    id: 'academic',
+    label: 'Akademik Nazorat',
+    icon: BookOpen,
+    subItems: [
+      { id: 'logbooks', label: 'Kundaliklar Taftishi', icon: FileText, badge: '4' },
+      { id: 'grading-100', label: '100 Ballik ECTS Baholash', icon: Award, badge: 'Baholash' }
+    ]
+  },
   { id: 'syllabus', label: 'Sillabus va Dasturlar', icon: BookOpen },
-  { id: 'defense', label: 'Yakuniy Himoya & ECTS', icon: Award, badge: 'Himoya' },
   { id: 'settings', label: 'Sozlamalar', icon: Settings },
 ];
 
 export default function TeacherDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'logbooks' | 'syllabus' | 'defense' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<string>('overview');
 
   const [notification, setNotification] = useState<string | null>(null);
 
@@ -299,12 +306,12 @@ export default function TeacherDashboard() {
               </div>
             )}
 
-            {/* TAB 5: DEFENSE */}
-            {activeTab === 'defense' && (
+            {/* TAB: GRADING 100 ECTS (Submenu of Akademik Nazorat) */}
+            {activeTab === 'grading-100' && (
               <div className="space-y-6">
                 <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm space-y-4">
                   <div>
-                    <h3 className="text-sm font-bold text-zinc-900">Kafedra Yakuniy Himoyasi va 100 Ballik ECTS Baholash</h3>
+                    <h3 className="text-sm font-bold text-zinc-900">100 Ballik ECTS Baholash Markazi</h3>
                     <p className="text-xs text-zinc-500">Mentor (0-50 ball) va Ustoz (0-50 ball) rubrikalari asosida jami 100 ball hisoblanadi</p>
                   </div>
 
@@ -345,7 +352,7 @@ export default function TeacherDashboard() {
                                 <BookOpen className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                                 <span>OTM Himoya Bali (0-50):</span>
                               </div>
-                              <input 
+                              <input
                                 type="number"
                                 min="0"
                                 max="50"
@@ -365,7 +372,7 @@ export default function TeacherDashboard() {
                             </div>
                           </div>
 
-                          <button 
+                          <button
                             onClick={() => {
                               setNotification(`${s.name} uchun yakuniy ${totalScore.toFixed(1)} ball va "${ects.grade}" ECTS bahosi tasdiqlandi!`);
                               setTimeout(() => setNotification(null), 3500);
@@ -382,7 +389,7 @@ export default function TeacherDashboard() {
               </div>
             )}
 
-            {/* TAB 6: SETTINGS */}
+            {/* TAB 5: SETTINGS */}
             {activeTab === 'settings' && (
               <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm space-y-6">
                 <div>
@@ -393,8 +400,8 @@ export default function TeacherDashboard() {
                 <div className="space-y-4 max-w-md">
                   <div>
                     <label className="block text-xs font-medium text-zinc-700 mb-1">F.I.SH</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       defaultValue="Dotsent Jamshid Karimov"
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-900"
                     />
@@ -402,8 +409,8 @@ export default function TeacherDashboard() {
 
                   <div>
                     <label className="block text-xs font-medium text-zinc-700 mb-1">Telefon Raqami</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       defaultValue="+998 90 333 33 33"
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-900"
                     />
@@ -411,8 +418,8 @@ export default function TeacherDashboard() {
 
                   <div>
                     <label className="block text-xs font-medium text-zinc-700 mb-1">Konsultatsiya va Qabul Soatlari</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       defaultValue="Chorshanba va Juma 14:00 - 16:00 (304-xona)"
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-900"
                     />
@@ -429,7 +436,7 @@ export default function TeacherDashboard() {
                     </p>
                   </div>
 
-                  <button 
+                  <button
                     onClick={() => {
                       setNotification('O\'qituvchi sozlamalari saqlandi!');
                       setTimeout(() => setNotification(null), 3000);

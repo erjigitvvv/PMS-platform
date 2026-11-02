@@ -24,13 +24,29 @@ import CollapsibleSidebar, { NavItem } from '@/components/CollapsibleSidebar';
 const ADMIN_NAV_ITEMS: NavItem[] = [
   { id: 'health', label: 'Server & API Salomatligi', icon: Activity },
   { id: 'users', label: 'Foydalanuvchilar (RBAC)', icon: Users, badge: '5 rol' },
-  { id: 'audit', label: 'Xavfsizlik & Audit Loglari', icon: ShieldCheck },
-  { id: 'backups', label: 'Zaxira Nusxalari (Backups)', icon: Database },
+  {
+    id: 'structure',
+    label: 'Universitet Tuzilmasi',
+    icon: Building2,
+    subItems: [
+      { id: 'faculties-depts', label: 'Fakultet & Kafedralar', icon: Building2 },
+      { id: 'groups-quotas', label: 'Guruhlar va Kvotalar', icon: Users, badge: '12' }
+    ]
+  },
+  {
+    id: 'security-suite',
+    label: 'Xavfsizlik & Anti-Fraud',
+    icon: ShieldCheck,
+    subItems: [
+      { id: 'audit', label: 'Audit Loglari', icon: ShieldCheck },
+      { id: 'backups', label: 'Zaxira Nusxalari (Backups)', icon: Database }
+    ]
+  },
 ];
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'health' | 'users' | 'audit' | 'backups'>('health');
+  const [activeTab, setActiveTab] = useState<string>('health');
   const [notification, setNotification] = useState<string | null>(null);
 
   const handleLogout = () => {
@@ -204,6 +220,86 @@ export default function AdminDashboard() {
                               Parolni yangilash
                             </button>
                           </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* SUBMENU TAB: FACULTIES & DEPARTMENTS */}
+            {activeTab === 'faculties-depts' && (
+              <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-sm font-bold text-zinc-900">Universitet Fakultetlari va Kafedralari</h3>
+                    <p className="text-xs text-zinc-500">TIU tarkibiy tuzilmasi va kafedralar ro'yxati</p>
+                  </div>
+                  <button className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 shadow-sm">
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Yangi Kafedra Qo'shish</span>
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {[
+                    { name: 'Axborot texnologiyalari fakulteti', code: 'IT', depts: 4, head: 'Prof. Alimov B.T.' },
+                    { name: 'Iqtisodiyot va moliya fakulteti', code: 'ECO', depts: 3, head: 'Prof. Umarov S.R.' },
+                    { name: 'Xalqaro munosabatlar fakulteti', code: 'IR', depts: 2, head: 'Dots. Karimov Z.A.' }
+                  ].map((f, idx) => (
+                    <div key={idx} className="p-4 rounded-xl border border-zinc-200/60 bg-zinc-50/50 flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-bold text-zinc-900 text-xs">{f.name}</span>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-200 text-zinc-700">{f.code}</span>
+                        </div>
+                        <p className="text-xs text-zinc-500 mt-1">Kafedralar soni: {f.depts} ta • Dekan: {f.head}</p>
+                      </div>
+                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/60">Faol</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* SUBMENU TAB: GROUPS & QUOTAS */}
+            {activeTab === 'groups-quotas' && (
+              <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-sm font-bold text-zinc-900">Talabalar Guruhlari va Amaliyot Kvotalari</h3>
+                    <p className="text-xs text-zinc-500">2026-2027 o'quv yili uchun guruhlar bo'yicha amaliyot o'rinlari</p>
+                  </div>
+                  <button className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 shadow-sm">
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Guruh Qo'shish</span>
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-zinc-50 text-zinc-500 border-b border-zinc-200">
+                      <tr>
+                        <th className="py-2.5 px-3 font-medium">Guruh Nomi</th>
+                        <th className="py-2.5 px-3 font-medium">Mutaxassislik</th>
+                        <th className="py-2.5 px-3 font-medium">Talabalar Soni</th>
+                        <th className="py-2.5 px-3 font-medium">Kvota Bandligi</th>
+                        <th className="py-2.5 px-3 font-medium">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-100">
+                      {[
+                        { group: 'DI-202-22', spec: 'Dasturiy injiniring', students: '28 nafar', quota: '100% biriktirilgan', status: 'FAOL' },
+                        { group: 'DI-201-22', spec: 'Dasturiy injiniring', students: '25 nafar', quota: '100% biriktirilgan', status: 'FAOL' },
+                        { group: 'KIB-101-23', spec: 'Kiberxavfsizlik', students: '22 nafar', quota: '95% biriktirilgan', status: 'FAOL' }
+                      ].map((g, i) => (
+                        <tr key={i} className="hover:bg-zinc-50/50">
+                          <td className="py-3 px-3 font-mono font-bold text-zinc-900">{g.group}</td>
+                          <td className="py-3 px-3 text-zinc-800">{g.spec}</td>
+                          <td className="py-3 px-3 font-semibold text-zinc-700">{g.students}</td>
+                          <td className="py-3 px-3 font-semibold text-emerald-700">{g.quota}</td>
+                          <td className="py-3 px-3 font-bold text-zinc-900">{g.status}</td>
                         </tr>
                       ))}
                     </tbody>
