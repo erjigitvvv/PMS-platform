@@ -1,9 +1,12 @@
 import asyncio
 import os
 import logging
+from dotenv import load_dotenv
+load_dotenv()
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import CommandStart, Command
 from aiogram.enums import ParseMode
+from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import (
@@ -17,7 +20,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-bot = Bot(token=TOKEN, parse_mode=ParseMode.HTML) if TOKEN else None
+bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML)) if TOKEN else None
 dp = Dispatcher()
 
 # States for Student Daily Log Submission
