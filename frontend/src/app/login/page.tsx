@@ -88,10 +88,10 @@ export default function LoginPage() {
       {/* Brand Header with Official Borderless TIU Logo */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <div className="flex justify-center mb-4">
-          <img 
-            src="/tiu-official-logo.png" 
-            alt="Tashkent International University" 
-            className="h-20 w-auto object-contain"
+          <img
+            src="/tiu-official-logo.png"
+            alt="Tashkent International University"
+            className="h-28 sm:h-32 w-auto object-contain"
           />
         </div>
         <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight leading-snug">

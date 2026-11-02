@@ -695,7 +695,7 @@ export default function DekanatDashboard() {
         </header>
 
         {/* Content Body */}
-        <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-6xl w-full mx-auto space-y-6">
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
           <main className="flex-1 space-y-6">
             {notification && (
               <div className="bg-emerald-50 border border-emerald-200/80 rounded-2xl p-4 flex items-center space-x-3 text-emerald-800 text-xs shadow-sm">
