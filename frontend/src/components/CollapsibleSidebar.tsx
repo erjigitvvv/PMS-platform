@@ -295,8 +295,8 @@ export default function CollapsibleSidebar({
         {/* Header / Brand */}
         <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
           <div className="flex items-center space-x-3 overflow-hidden">
-            <div className="w-10 h-10 rounded-xl bg-white border border-zinc-200 flex items-center justify-center p-1.5 shrink-0 shadow-xs">
-              <img src="/tiu-logo.svg" alt="TIU" className="w-full h-full object-contain" />
+            <div className="h-9 w-9 flex items-center justify-center shrink-0">
+              <img src="/tiu-official-logo.png" alt="TIU" className="h-full w-full object-contain" />
             </div>
             {!isCollapsed && (
               <div className="transition-all duration-300 min-w-0">
@@ -370,7 +370,7 @@ export default function CollapsibleSidebar({
           >
             <Menu className="w-5 h-5" />
           </button>
-          <img src="/tiu-logo.svg" alt="TIU" className="w-7 h-7 object-contain" />
+          <img src="/tiu-official-logo.png" alt="TIU" className="h-7 w-auto object-contain" />
           <span className="text-xs font-bold text-zinc-900">{roleTitle}</span>
         </div>
         <div className="flex items-center space-x-2">
