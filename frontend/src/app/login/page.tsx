@@ -130,7 +130,7 @@ export default function LoginPage() {
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value.toUpperCase())}
-                  placeholder="Masalan: AD987789 yoki ST501824"
+                  placeholder="AD987789"
                   className="block w-full pl-9 pr-3 py-2.5 text-xs font-mono rounded-xl border border-zinc-200 bg-white placeholder-zinc-400 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-all text-zinc-900 uppercase tracking-wider"
                 />
               </div>
