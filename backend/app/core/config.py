@@ -3,6 +3,9 @@ from typing import List, Union
 from pydantic import AnyHttpUrl, validator
 from pydantic_settings import BaseSettings
 
+_BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+_DEFAULT_DB = os.path.join(_BASE_DIR, "pms.db").replace("\\", "/")
+
 class Settings(BaseSettings):
     PROJECT_NAME: str = "OTM Talabalar Amaliyotini Boshqarish Platformasi (PMS)"
     API_V1_STR: str = "/api/v1"
@@ -11,7 +14,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
 
     # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///D:/PMS-platform/backend/pms.db")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite+aiosqlite:///{_DEFAULT_DB}")
 
     # Redis & Real-time
     REDIS_URL: str = "redis://localhost:6379/0"
