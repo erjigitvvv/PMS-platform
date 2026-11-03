@@ -40,7 +40,8 @@ import {
   CalendarCheck,
   Bell,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  Globe
 } from 'lucide-react';
 import CollapsibleSidebar, { NavItem } from '@/components/CollapsibleSidebar';
 
@@ -94,6 +95,7 @@ interface ApplicationItem {
   contractNo: string | null;
   date: string;
   docFile?: string;
+  comment?: string;
 }
 
 interface NotificationItem {
@@ -105,14 +107,392 @@ interface NotificationItem {
   type: string;
 }
 
-const DEKANAT_NAV_ITEMS: NavItem[] = [
-  { id: 'overview', label: 'Asosiy', icon: LayoutDashboard },
-  { id: 'students-list', label: 'Talabalar Boshqaruvi', icon: GraduationCap, badge: '8' },
-  { id: 'teachers', label: 'Kafedra Ustozlari', icon: BookOpen, badge: '4' },
-  { id: 'contracts-pending', label: 'Shartnomalar & Arizalar', icon: FileText },
-  { id: 'partners', label: 'Hamkor Tashkilotlar', icon: Briefcase, badge: '4' },
-  { id: 'settings', label: 'Sozlamalar', icon: Settings },
-];
+type Lang = 'uz' | 'ru';
+
+const translations = {
+  uz: {
+    portalTitle: 'Tashkent International University',
+    portalSubtitle: 'Amaliyot Boshqaruv Portali',
+    dekanatRole: 'Dekanat Boshqaruvi',
+    dekanatSub: 'Amaliyot & Karyera Markazi',
+    logout: 'Tizimdan chiqish',
+    notificationsTitle: 'Bildirishnomalar Markazi',
+    markAllRead: "Barchasini o'qilgan deb belgilash",
+    close: 'Yopish',
+    currentLogin: 'Joriy Login',
+    // Nav Items
+    navOverview: 'Asosiy',
+    navStudents: 'Talabalar Boshqaruvi',
+    navTeachers: 'Kafedra Ustozlari',
+    navContracts: 'Shartnomalar & Arizalar',
+    navPartners: 'Hamkor Tashkilotlar',
+    navSettings: 'Sozlamalar',
+    // Subnav
+    subNavAllStudents: 'Barcha Talabalar',
+    subNavUnassigned: 'Biriktirilmaganlar',
+    subNavCompanies: "Korxonalar Bo'yicha",
+    subNavLogs: 'Davomat & Kundalik',
+    // Overview
+    overviewTitle: 'Fakultet Dekanati Jonli Monitoringi',
+    overviewSubtitle: "Talabalar amaliyoti, shartnomalar holati va ustozlar yuklamasi",
+    kpiTotalStudents: 'Jami Talabalar',
+    kpiTotalStudentsSub: '100% qamrov',
+    kpiApprovedContracts: 'Tasdiqlangan Shartnomalar',
+    kpiApprovedContractsSub: 'ta kutilmoqda',
+    kpiPartners: 'Hamkor Korxonalar',
+    kpiPartnersSub: 'faol memorandum',
+    kpiAttendance: "O'rtacha Davomat",
+    kpiAttendanceSub: "A'lo ko'rsatkich",
+    recentApplications: "So'nggi Shartnoma Arizalari",
+    recentApplicationsSub: "Talabalar kiritgan arizalarni tezkor ko'rib chiqish va tasdiqlash",
+    quickActions: 'Tezkor Amallar',
+    actionAddStudent: "Talaba qo'shish",
+    actionAddTeacher: "Ustoz qo'shish",
+    actionAddPartner: "Hamkor qo'shish",
+    actionDownloadReport: 'Hisobotni yuklab olish',
+    // Students
+    studentsTitle: "Talabalar Ro'yxati va Amaliyot Boshqaruvi",
+    studentsSubtitle: "Fakultet talabalarini guruhlar va amaliyot o'rinlari bo'yicha monitoring qilish",
+    searchStudentPlaceholder: "Talaba F.I.SH yoki ID raqami bo'yicha qidiruv...",
+    allGroups: 'Barcha guruhlar',
+    filterAll: 'Barchasi',
+    filterAssigned: 'Biriktirilgan',
+    filterUnassigned: 'Biriktirilmagan',
+    filterActive: 'Faol',
+    btnExportExcel: 'Excelga yuklash',
+    btnAddStudent: "Yangi Talaba Qo'shish",
+    thStudentId: 'Talaba ID',
+    thStudentName: 'F.I.SH',
+    thGroup: 'Guruh',
+    thCompany: 'Korxona',
+    thTeacher: 'Kafedra Ustozi',
+    thContract: 'Shartnoma',
+    thAttendance: 'Davomat',
+    thStatus: 'Holati',
+    thActions: 'Amallar',
+    btnView: "Ko'rish",
+    btnAssign: 'Biriktirish',
+    statusActive: 'FAOL',
+    statusPending: 'KUTILMOQDA',
+    statusApproved: 'TASDIQLANDI',
+    statusRejected: 'RAD ETILDI',
+    // Teachers
+    teachersTitle: 'Kafedra Ustozlari va Ilmiy Rahbariyat',
+    teachersSubtitle: "Amaliyotchi talabalarga biriktirilgan o'qituvchilar yuklamasi monitoringi",
+    searchTeacherPlaceholder: "Ustoz F.I.SH yoki kafedra bo'yicha qidiruv...",
+    btnAddTeacher: "Yangi Ustoz Qo'shish",
+    thTeacherName: 'Ustoz F.I.SH',
+    thDepartment: 'Kafedra / Departament',
+    thDegree: 'Ilmiy Unvon',
+    thPhone: 'Telefon',
+    thAssignedStudents: 'Biriktirilgan Talabalar',
+    thQuotaBadge: 'Maksimal Kvota',
+    quotaFull: "To'lgan (3/3)",
+    quotaAvailable: "O'rin bor",
+    quotaLimitNote: 'Fakultet qoidasi: har bir ustozga maksimal 3 nafar talaba',
+    // Contracts
+    contractsTitle: '3 Tomonlama Shartnomalar va Arizalar Markazi',
+    contractsSubtitle: "Talabalar yuborgan amaliyot arizalarini tasdiqlang va QR-kodli shartnoma generatsiya qiling.",
+    thDocument: 'Biriktirilgan Hujjat',
+    thContractNo: 'Shartnoma №',
+    thDekanatComment: 'Dekanat Izohi',
+    btnReview: "Ko'rib chiqish",
+    btnDecision: 'Qaror qabul qilish',
+    btnApprove: 'Tasdiqlash & QR Shartnoma',
+    btnReject: 'Rad Etish',
+    btnDownloadPdf: 'PDF',
+    btnDownloadDocx: 'Word',
+    // Review Modal
+    reviewModalTitle: "3 Tomonlama Shartnoma & Ariza Ko'rigi",
+    reviewModalId: 'Ariza identifikatori',
+    commentLabel: "Dekanat Mas'uli Izohi / Xulosasi (Rad etishda MAJBURIY, kamida 10 ta belgi)",
+    commentPlaceholder: "Tasdiqlashda izoh ixtiyoriy, rad etilganda sabab yozilishi shart (kamida 10 ta belgi)...",
+    commentNotice: "Eslatma: Rad etish uchun kamida 10 ta belgi asoslantirilgan sabab kiritilishi shart. Ushbu izoh talaba kabinetida aks etadi.",
+    // Add Student Modal
+    modalAddStudentTitle: "Yangi Talaba Qo'shish",
+    lblStudentName: 'Talaba F.I.SH *',
+    phStudentName: 'Masalan: Azizbek Olimov',
+    lblGroup: 'Guruh *',
+    phGroup: 'Masalan: DI-202-22',
+    lblPhone: 'Telefon Raqami *',
+    lblAssignTeacher: 'Biriktiriladigan Ustoz (Ixtiyoriy)',
+    phSearchTeacher: 'Ustoz nomini qidirish...',
+    optNoTeacher: '-- Biriktirilmasin (Keyinroq biriktirish) --',
+    lblAssignCompany: 'Amaliyot Korxonasi (Ixtiyoriy)',
+    optNoCompany: '-- Tanlanmasin (Keyinroq biriktirish) --',
+    btnSubmitStudent: "Talabani Qo'shish & Login Yaratish",
+    // Add Teacher Modal
+    modalAddTeacherTitle: "Yangi Kafedra Ustozini Qo'shish",
+    lblTeacherName: 'Ustoz F.I.SH *',
+    phTeacherName: 'Masalan: Dotsent Jamshid Karimov',
+    lblDepartment: 'Kafedra / Departament *',
+    phDepartment: 'Kafedra yoki departament nomini kiriting',
+    lblDegree: 'Ilmiy Unvon / Lavozim *',
+    phDegree: "Masalan: Dotsent, PhD, professor yoki Katta o'qituvchi",
+    fixedQuotaTitle: "Qat'iy kvota cheklovi: maksimal 3 nafar talaba",
+    fixedQuotaDesc: "Tizim qoidasiga ko'ra har bir biriktirilgan ustoz uchun maksimal 3 ta talaba biriktirish limit qoidasi o'rnatilgan.",
+    btnSubmitTeacher: "Ustozni Qo'shish & TC Login Yaratish",
+    // Settings 6 Blocks
+    settingsTitle: 'Dekanat va Fakultet Kengaytirilgan Sozlamalari',
+    settingsSubtitle: "Fakultet profili, amaliyot taqvimi, muhr & rekvizitlar, akademik qoidalar, xabarnomalar va xavfsizlik.",
+    setTabAll: 'Barchasi',
+    setTabProfile: '1. Rahbariyat Profili',
+    setTabCalendar: '2. Amaliyot Taqvimi',
+    setTabLegal: '3. Muhr & Rekvizitlar',
+    setTabRules: '4. Qoidalar & Limitlar',
+    setTabAlerts: '5. Ogohlantirishlar',
+    setTabSecurity: '6. Akkaunt Xavfsizligi',
+    // Block 1
+    block1Title: 'Fakultet va Rahbariyat Profili',
+    block1Desc: "Rasmiy buyruqlarda (D1) va 3 tomonlama shartnomalarda ko'rinadigan rekvizitlar.",
+    lblFacultyName: "Fakultet To'liq Nomi:",
+    lblDeanName: 'Dekan F.I.SH:',
+    lblDeanDeputy: "Dekan O'rinbosari / Amaliyot Mas'uli:",
+    lblFacultyPhone: 'Aloqa Telefoni:',
+    lblFacultyEmail: 'Xizmat E-pochtasi:',
+    lblRoomNumber: 'Xona Raqami:',
+    btnSaveProfile: 'Profilni Saqlash',
+    // Block 2
+    block2Title: 'Amaliyot Taqvimi va Muddatlar',
+    block2Desc: "O'quv yili, semestr, arizalar qabuli, amaliyot davri va yakuniy himoya muddatlari.",
+    lblAcademicYear: "O'quv Yili:",
+    lblSemester: 'Semestr:',
+    lblAppDeadline: 'Ariza Topshirish Oxirgi Muddati (Deadline):',
+    lblPracticumStart: 'Amaliyot Boshlanishi:',
+    lblPracticumEnd: 'Amaliyot Yakuni:',
+    lblDailyLogTime: 'Kunlik Kundalik Topshirish Vaqti:',
+    lblFinalDefenseDate: 'Yakuniy Himoya Sanasi:',
+    btnSaveCalendar: 'Muddatlarni Saqlash',
+    // Block 3
+    block3Title: 'Hujjatlar, Muhr va Yuridik Rekvizitlar',
+    block3Desc: "Rasmiy hujjat prefikslari, OTM gerbli muhri faksimilesi va bank rekvizitlari.",
+    lblOrderPrefix: "Dekanat Buyrug'i Prefiksi:",
+    lblContractPrefix: '3 Tomonlama Shartnoma Prefiksi:',
+    lblOfficialSeal: 'Universitet Gerbli Dumaloq Muhri (Faksimile):',
+    lblDeanSignature: 'Dekan E-imzo Faksimilesi:',
+    lblBankRequisites: 'OTM Bank Rekvizitlari & STIR:',
+    btnUploadSeal: 'Muhrni Yangilash',
+    btnUploadSignature: 'Imzoni Yangilash',
+    btnSaveLegal: 'Hujjat Sozlamalarini Saqlash',
+    // Block 4
+    block4Title: 'Akademik Qoidalar va Cheklovlar',
+    block4Desc: "Ustozlar yuklamasi, minimal davomat, talabalar boshlang'ich paroli va jarima qoidalari.",
+    lblMaxStudentsRule: 'Bir Ustozga Maksimal Talabalar Soni:',
+    maxStudentsRuleExplanation: "Qat'iy 3 nafar talaba. Ushbu qoida amaliyot sifatini kafolatlash uchun o'rnatilgan va o'zgartirilmaydi.",
+    lblMinAttendance: 'Minimal Davomat Chegarasi (%):',
+    lblDefaultPassword: "Yangi Talabalar Standart Paroli:",
+    lblLatePenaltyToggle: 'Kechiktirilgan hisobotlar uchun jarima ballari hisoblansin',
+    latePenaltyDesc: "Belgilangan vaqtdan (22:00) keyin kiritilgan kundaliklar bahosidan avtomatik 5% jarima chegiriladi.",
+    btnSaveRules: 'Qoidalarni Saqlash',
+    // Block 5
+    block5Title: 'Favqulodda Xabarnomalar va Alertlar',
+    block5Desc: "Kritik holatlar bo'yicha dekanatga va Telegram botga avtomatik xabarlar.",
+    lblAlertAbsence: "3 kun ketma-ket amaliyotga kelmagan talaba bo'yicha dekanatga darhol ogohlantirish yuborilsin",
+    lblAlertMissingContract: "Amaliyot boshlanishiga 5 kun qolganda shartnomasiz talabalar monitoringi faollashtirilsin",
+    lblTelegramIntegration: 'Telegram Bot Integratsiyasi (Chat ID / Webhook):',
+    telegramActiveBadge: '● Telegram Bot Faol (@tiupm_bot)',
+    btnSaveAlerts: 'Xabarnomalarni Saqlash',
+    // Block 6
+    block6Title: 'Dekan Akkaunti Xavfsizligi',
+    block6Desc: "Dekanat boshqaruv hisobi kirish ID raqami va maxfiy parolini yangilang.",
+    lblDekanatId: 'Dekanat Login Identifikatori:',
+    lblCurrentPassword: 'Joriy Parol:',
+    lblNewPassword: 'Yangi Parol:',
+    lblConfirmPassword: 'Yangi Parolni Tasdiqlang:',
+    btnSaveSecurity: 'Xavfsizlik Sozlamalarini Saqlash'
+  },
+  ru: {
+    portalTitle: 'Tashkent International University',
+    portalSubtitle: 'Портал Управления Практикой',
+    dekanatRole: 'Управление Деканата',
+    dekanatSub: 'Центр Практики и Карьеры',
+    logout: 'Выйти из системы',
+    notificationsTitle: 'Центр Уведомлений',
+    markAllRead: 'Отметить все как прочитанные',
+    close: 'Закрыть',
+    currentLogin: 'Текущий логин',
+    // Nav Items
+    navOverview: 'Главный дашборд',
+    navStudents: 'Управление студентами',
+    navTeachers: 'Преподаватели кафедры',
+    navContracts: 'Договоры и заявления',
+    navPartners: 'Организации-партнеры',
+    navSettings: 'Настройки',
+    // Subnav
+    subNavAllStudents: 'Все Студенты',
+    subNavUnassigned: 'Не прикрепленные',
+    subNavCompanies: 'По Предприятиям',
+    subNavLogs: 'Посещаемость и Дневник',
+    // Overview
+    overviewTitle: 'Оперативный Мониторинг Деканата',
+    overviewSubtitle: 'Практика студентов, статус договоров и нагрузка преподавателей',
+    kpiTotalStudents: 'Всего Студентов',
+    kpiTotalStudentsSub: '100% охват',
+    kpiApprovedContracts: 'Утвержденные Договоры',
+    kpiApprovedContractsSub: 'ожидают решения',
+    kpiPartners: 'Организации-Партнеры',
+    kpiPartnersSub: 'активных меморандумов',
+    kpiAttendance: 'Средняя Посещаемость',
+    kpiAttendanceSub: 'Отличный показатель',
+    recentApplications: 'Последние Заявления на Практику',
+    recentApplicationsSub: 'Оперативное рассмотрение и утверждение поданных заявлений',
+    quickActions: 'Быстрые Действия',
+    actionAddStudent: 'Добавить студента',
+    actionAddTeacher: 'Добавить преподавателя',
+    actionAddPartner: 'Добавить партнера',
+    actionDownloadReport: 'Скачать отчет',
+    // Students
+    studentsTitle: 'Список Студентов и Управление Практикой',
+    studentsSubtitle: 'Мониторинг студентов факультета по академическим группам и местам практики',
+    searchStudentPlaceholder: 'Поиск по Ф.И.О. или ID студента...',
+    allGroups: 'Все группы',
+    filterAll: 'Все',
+    filterAssigned: 'Прикрепленные',
+    filterUnassigned: 'Не прикрепленные',
+    filterActive: 'Активные',
+    btnExportExcel: 'Экспорт в Excel',
+    btnAddStudent: 'Добавить Студента',
+    thStudentId: 'ID Студента',
+    thStudentName: 'Ф.И.О.',
+    thGroup: 'Группа',
+    thCompany: 'Предприятие',
+    thTeacher: 'Преподаватель',
+    thContract: 'Договор',
+    thAttendance: 'Посещаемость',
+    thStatus: 'Статус',
+    thActions: 'Действия',
+    btnView: 'Просмотр',
+    btnAssign: 'Прикрепить',
+    statusActive: 'АКТИВЕН',
+    statusPending: 'ОЖИДАНИЕ',
+    statusApproved: 'УТВЕРЖДЕНО',
+    statusRejected: 'ОТКЛОНЕНО',
+    // Teachers
+    teachersTitle: 'Преподаватели Кафедры и Научные Руководители',
+    teachersSubtitle: 'Мониторинг нагрузки преподавателей, прикрепленных к студентам-практикантам',
+    searchTeacherPlaceholder: 'Поиск по Ф.И.О. или кафедре...',
+    btnAddTeacher: 'Добавить Преподавателя',
+    thTeacherName: 'Ф.И.О. Преподавателя',
+    thDepartment: 'Кафедра / Департамент',
+    thDegree: 'Ученое Звание',
+    thPhone: 'Телефон',
+    thAssignedStudents: 'Прикрепленные Студенты',
+    thQuotaBadge: 'Макс. Квота',
+    quotaFull: 'Заполнено (3/3)',
+    quotaAvailable: 'Есть места',
+    quotaLimitNote: 'Правило факультета: максимум 3 студента на одного преподавателя',
+    // Contracts
+    contractsTitle: 'Центр Трехсторонних Договоров и Заявлений',
+    contractsSubtitle: 'Утверждайте заявления студентов и генерируйте официальные договоры с QR-кодом.',
+    thDocument: 'Прикрепленный Документ',
+    thContractNo: '№ Договора',
+    thDekanatComment: 'Комментарий Деканата',
+    btnReview: 'Просмотр',
+    btnDecision: 'Принять решение',
+    btnApprove: 'Утвердить и создать QR',
+    btnReject: 'Отклонить',
+    btnDownloadPdf: 'PDF',
+    btnDownloadDocx: 'Word',
+    // Review Modal
+    reviewModalTitle: 'Просмотр Трехстороннего Договора и Заявления',
+    reviewModalId: 'Идентификатор заявления',
+    commentLabel: 'Решение / Комментарий Деканата (ОБЯЗАТЕЛЬНО при отклонении, не менее 10 символов)',
+    commentPlaceholder: 'При утверждении необязательно, при отклонении укажите причину (не менее 10 символов)...',
+    commentNotice: 'Примечание: Для отклонения заявления обязательно указать причину не менее 10 символов.',
+    // Add Student Modal
+    modalAddStudentTitle: 'Добавление Нового Студента',
+    lblStudentName: 'Ф.И.О. Студента *',
+    phStudentName: 'Например: Азизбек Олимов',
+    lblGroup: 'Группа *',
+    phGroup: 'Например: DI-202-22',
+    lblPhone: 'Номер Телефона *',
+    lblAssignTeacher: 'Научный Руководитель (Необязательно)',
+    phSearchTeacher: 'Поиск преподавателя по имени...',
+    optNoTeacher: '-- Не назначать (Назначить позже) --',
+    lblAssignCompany: 'База Практики (Необязательно)',
+    optNoCompany: '-- Не выбирать (Выбрать позже) --',
+    btnSubmitStudent: 'Добавить Студента и Создать Логин',
+    // Add Teacher Modal
+    modalAddTeacherTitle: 'Добавление Преподавателя Кафедры',
+    lblTeacherName: 'Ф.И.О. Преподавателя *',
+    phTeacherName: 'Например: Доцент Джамшид Каримов',
+    lblDepartment: 'Кафедра / Департамент *',
+    phDepartment: 'Введите название кафедры или департамента',
+    lblDegree: 'Ученое Звание / Должность *',
+    phDegree: 'Например: Доцент, PhD, профессор или Старший преподаватель',
+    fixedQuotaTitle: 'Строгое ограничение квоты: максимум 3 студента',
+    fixedQuotaDesc: 'По академическим правилам на одного научного руководителя устанавливается лимит не более 3 студентов.',
+    btnSubmitTeacher: 'Добавить Преподавателя и Создать Логин',
+    // Settings 6 Blocks
+    settingsTitle: 'Расширенные Настройки Деканата и Факультета',
+    settingsSubtitle: 'Профиль факультета, календарь практики, печать и реквизиты, академические правила, оповещения и безопасность.',
+    setTabAll: 'Все блоки',
+    setTabProfile: '1. Профиль Руководства',
+    setTabCalendar: '2. Календарь Практики',
+    setTabLegal: '3. Печать и Реквизиты',
+    setTabRules: '4. Правила и Лимиты',
+    setTabAlerts: '5. Оповещения',
+    setTabSecurity: '6. Безопасность Аккаунта',
+    // Block 1
+    block1Title: 'Профиль Факультета и Руководства',
+    block1Desc: 'Реквизиты, отображаемые в официальных приказах (D1) и трехсторонних договорах.',
+    lblFacultyName: 'Полное Название Факультета:',
+    lblDeanName: 'Ф.И.О. Декана:',
+    lblDeanDeputy: 'Зам. Декана / Ответственный за практику:',
+    lblFacultyPhone: 'Контактный Телефон:',
+    lblFacultyEmail: 'Служебный E-mail:',
+    lblRoomNumber: 'Номер Кабинета:',
+    btnSaveProfile: 'Сохранить Профиль',
+    // Block 2
+    block2Title: 'Календарь Практики и Сроки',
+    block2Desc: 'Учебный год, семестр, подача заявлений, период практики и дата итоговой защиты.',
+    lblAcademicYear: 'Учебный Год:',
+    lblSemester: 'Семестр:',
+    lblAppDeadline: 'Крайний Срок Подачи Заявлений (Дедлайн):',
+    lblPracticumStart: 'Начало Практики:',
+    lblPracticumEnd: 'Окончание Практики:',
+    lblDailyLogTime: 'Время Сдачи Ежедневного Дневника:',
+    lblFinalDefenseDate: 'Дата Итоговой Защиты:',
+    btnSaveCalendar: 'Сохранить Сроки',
+    // Block 3
+    block3Title: 'Документы, Печать и Юридические Реквизиты',
+    block3Desc: 'Префиксы официальных документов, факсимиле гербовой печати ВУЗа и банковские реквизиты.',
+    lblOrderPrefix: 'Префикс Приказа Деканата:',
+    lblContractPrefix: 'Префикс Трехстороннего Договора:',
+    lblOfficialSeal: 'Круглая Гербовая Печать ВУЗа (Факсимиле):',
+    lblDeanSignature: 'Факсимиле Электронной Подписи Декана:',
+    lblBankRequisites: 'Банковские Реквизиты ВУЗа и ИНН:',
+    btnUploadSeal: 'Обновить Печать',
+    btnUploadSignature: 'Обновить Подпись',
+    btnSaveLegal: 'Сохранить Настройки Документов',
+    // Block 4
+    block4Title: 'Академические Правила и Ограничения',
+    block4Desc: 'Нагрузка преподавателей, минимальная посещаемость, начальный пароль студентов и штрафы.',
+    lblMaxStudentsRule: 'Максимальное Количество Студентов на Преподавателя:',
+    maxStudentsRuleExplanation: 'Строго 3 студента. Данное правило установлено для гарантии качества наставничества и не подлежит изменению.',
+    lblMinAttendance: 'Минимальный Порог Посещаемости (%):',
+    lblDefaultPassword: 'Стандартный Пароль Новых Студентов:',
+    lblLatePenaltyToggle: 'Начислять штрафные баллы за просроченные отчеты',
+    latePenaltyDesc: 'За дневники, отправленные позже установленного времени (22:00), автоматически вычитается 5% от итогового балла.',
+    btnSaveRules: 'Сохранить Правила',
+    // Block 5
+    block5Title: 'Экстренные Оповещения и Алерты',
+    block5Desc: 'Автоматические уведомления деканату и в Telegram-бот при возникновении критических ситуаций.',
+    lblAlertAbsence: 'Немедленно оповещать деканат при пропуске студентом практики 3 дня подряд',
+    lblAlertMissingContract: 'Активировать мониторинг студентов без договоров за 5 дней до начала практики',
+    lblTelegramIntegration: 'Интеграция с Telegram-ботом (Chat ID / Webhook):',
+    telegramActiveBadge: '● Telegram-бот активен (@tiupm_bot)',
+    btnSaveAlerts: 'Сохранить Оповещения',
+    // Block 6
+    block6Title: 'Безопасность Аккаунта Декана',
+    block6Desc: 'Обновите входной логин ID и пароль административного доступа деканата.',
+    lblDekanatId: 'Логин Идентификатор Деканата:',
+    lblCurrentPassword: 'Текущий Пароль:',
+    lblNewPassword: 'Новый Пароль:',
+    lblConfirmPassword: 'Подтвердите Новый Пароль:',
+    btnSaveSecurity: 'Сохранить Настройки Безопасности'
+  }
+};
 
 export default function DekanatDashboard() {
   const router = useRouter();
@@ -161,6 +541,48 @@ export default function DekanatDashboard() {
   const [newPass, setNewPass] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
 
+  // 6-Block Settings Extended State
+  const [settingsFilter, setSettingsFilter] = useState<'all' | 'profile' | 'calendar' | 'legal' | 'rules' | 'alerts' | 'security'>('all');
+  const [facultyPhone, setFacultyPhone] = useState('+998 71 200 44 44');
+  const [roomNumber, setRoomNumber] = useState('408-A xona');
+  const [academicYear, setAcademicYear] = useState('2025/2026');
+  const [semester, setSemester] = useState('Bahorgi 8-semestr');
+  const [dailyLogDeadlineTime, setDailyLogDeadlineTime] = useState('22:00');
+  const [finalDefenseDeadline, setFinalDefenseDeadline] = useState('2026-06-15');
+  const [orderPrefix, setOrderPrefix] = useState('B-104/26');
+  const [contractPrefix, setContractPrefix] = useState('AMAL-2026');
+  const [sealFile, setSealFile] = useState('tiu_official_seal_2026.png');
+  const [signatureFile, setSignatureFile] = useState('dekan_e_imzo_faksimile.png');
+  const [bankRequisites, setBankRequisites] = useState('TIU MFY, ATIB Ipoteka Bank, H/R: 20208000900123456001, MFO: 00423, STIR: 308999123');
+  const [minAttendanceRate, setMinAttendanceRate] = useState(70);
+  const [defaultStudentPassword, setDefaultStudentPassword] = useState('Talaba123!');
+  const [lateSubmissionPenalty, setLateSubmissionPenalty] = useState(true);
+  const [alertConsecutiveAbsence, setAlertConsecutiveAbsence] = useState(true);
+  const [alertMissingContract, setAlertMissingContract] = useState(true);
+  const [telegramBotChatId, setTelegramBotChatId] = useState('-100234567890');
+  const [telegramWebhookActive, setTelegramWebhookActive] = useState(true);
+
+  // Localization State: UZ | RU ONLY
+  const [lang, setLang] = useState<Lang>('uz');
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedLang = localStorage.getItem('pms_dekanat_lang') as Lang;
+      if (savedLang === 'uz' || savedLang === 'ru') {
+        setLang(savedLang);
+      }
+    }
+  }, []);
+
+  const handleLanguageChange = (newLang: Lang) => {
+    setLang(newLang);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('pms_dekanat_lang', newLang);
+    }
+  };
+
+  const t = translations[lang];
+
   // Credentials Result Modal state
   const [createdCredential, setCreatedCredential] = useState<{
     type: 'STUDENT' | 'TEACHER';
@@ -173,6 +595,10 @@ export default function DekanatDashboard() {
   const [copiedLogin, setCopiedLogin] = useState(false);
   const [copiedPass, setCopiedPass] = useState(false);
 
+  // Search & Decision States
+  const [teacherSearchQuery, setTeacherSearchQuery] = useState('');
+  const [decisionComment, setDecisionComment] = useState('');
+
   // Forms state
   const [newStudent, setNewStudent] = useState({
     name: '',
@@ -184,7 +610,7 @@ export default function DekanatDashboard() {
 
   const [newTeacher, setNewTeacher] = useState({
     name: '',
-    department: 'Axborot texnologiyalari kafedrasi',
+    department: 'Dasturiy injiniring kafedrasi',
     degree: 'Dotsent',
     phone: '+998 90 '
   });
@@ -355,7 +781,8 @@ export default function DekanatDashboard() {
       status: 'APPROVED',
       contractNo: 'AMAL-2026-0042',
       date: '2026-10-28',
-      docFile: 'Shartnoma_Sardor_Rahimov.pdf'
+      docFile: 'Shartnoma_Sardor_Rahimov.pdf',
+      comment: 'Hujjatlar to\'liq, amaliyotga ruxsat berildi'
     },
     {
       id: 'app_2',
@@ -367,7 +794,8 @@ export default function DekanatDashboard() {
       status: 'APPROVED',
       contractNo: 'AMAL-2026-0043',
       date: '2026-10-29',
-      docFile: 'Shartnoma_Madina_Karimova.pdf'
+      docFile: 'Shartnoma_Madina_Karimova.pdf',
+      comment: 'Uch tomonlama rasmiy shartnoma tasdiqlandi'
     },
     {
       id: 'app_3',
@@ -379,7 +807,8 @@ export default function DekanatDashboard() {
       status: 'SUBMITTED',
       contractNo: null,
       date: '2026-11-01',
-      docFile: 'Shartnoma_Javohir_Toshmatov.docx'
+      docFile: 'Shartnoma_Javohir_Toshmatov.docx',
+      comment: ''
     },
     {
       id: 'app_4',
@@ -391,7 +820,8 @@ export default function DekanatDashboard() {
       status: 'SUBMITTED',
       contractNo: null,
       date: '2026-11-02',
-      docFile: 'Shartnoma_Zarnigor_Aliyeva.pdf'
+      docFile: 'Shartnoma_Zarnigor_Aliyeva.pdf',
+      comment: ''
     }
   ]);
 
@@ -486,21 +916,24 @@ export default function DekanatDashboard() {
   };
 
   // Handlers
-  const handleApproveContract = (appId: string) => {
+  const handleApproveContract = (appId: string, commentText?: string) => {
     const generatedNo = `AMAL-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const finalComment = commentText !== undefined ? commentText : (decisionComment || 'Hujjatlar to\'liq, amaliyotga ruxsat berildi');
+
     setApplications(applications.map(app => {
       if (app.id === appId) {
         return {
           ...app,
           status: 'APPROVED',
-          contractNo: generatedNo
+          contractNo: generatedNo,
+          comment: finalComment
         };
       }
       return app;
     }));
 
     if (selectedAppForView && selectedAppForView.id === appId) {
-      setSelectedAppForView(prev => prev ? { ...prev, status: 'APPROVED', contractNo: generatedNo } : null);
+      setSelectedAppForView(prev => prev ? { ...prev, status: 'APPROVED', contractNo: generatedNo, comment: finalComment } : null);
     }
 
     const app = applications.find(a => a.id === appId);
@@ -508,26 +941,41 @@ export default function DekanatDashboard() {
       setStudents(students.map(s => s.name === app.studentName ? { ...s, contract: generatedNo, status: 'FAOL' } : s));
     }
 
-    setNotification('3 Tomonlama shartnoma QR-kod bilan avtomatik tasdiqlandi va generatsiya qilindi!');
+    setDecisionComment('');
+    setNotification('3 Tomonlama shartnoma QR-kod bilan avtomatik tasdiqlandi va izoh saqlandi!');
     setTimeout(() => setNotification(null), 3500);
   };
 
-  const handleRejectContract = (appId: string) => {
+  const handleRejectContract = (appId: string, commentText?: string) => {
+    const finalComment = (commentText !== undefined ? commentText : decisionComment).trim();
+
+    if (!finalComment || finalComment.length < 10) {
+      setNotification(
+        lang === 'uz'
+          ? "Rad etish sababi kiritilishi shart (kamida 10 ta belgi)!"
+          : "Укажите причину отклонения (не менее 10 символов)!"
+      );
+      setTimeout(() => setNotification(null), 3500);
+      return;
+    }
+
     setApplications(applications.map(app => {
       if (app.id === appId) {
         return {
           ...app,
-          status: 'REJECTED'
+          status: 'REJECTED',
+          comment: finalComment
         };
       }
       return app;
     }));
 
     if (selectedAppForView && selectedAppForView.id === appId) {
-      setSelectedAppForView(prev => prev ? { ...prev, status: 'REJECTED' } : null);
+      setSelectedAppForView(prev => prev ? { ...prev, status: 'REJECTED', comment: finalComment } : null);
     }
 
-    setNotification('Ariza rad etildi va talabaga xabar yuborildi.');
+    setDecisionComment('');
+    setNotification(lang === 'uz' ? 'Ariza rad etildi va talabaga rasmiy izoh yuborildi.' : 'Заявление отклонено, официальная причина отправлена студенту.');
     setTimeout(() => setNotification(null), 3500);
   };
 
@@ -686,20 +1134,42 @@ export default function DekanatDashboard() {
       )}
 
       <div className="flex flex-1">
+        {/* Dynamic Nav Items based on language */}
+        {(() => null)()}
         {/* Sidebar */}
         <CollapsibleSidebar
           role="OTM_STAFF"
-          roleTitle="Dekanat Boshqaruvi"
-          userName="Alisher Qodirov"
-          userSub="Dekanat OTM Monitoringi"
-          userBadge="OTM_STAFF"
-          items={DEKANAT_NAV_ITEMS}
+          roleTitle={t.dekanatRole}
+          userName={deanName}
+          userSub={t.dekanatSub}
+          userBadge={`DK${dekanatDigits}`}
+          items={[
+            { id: 'overview', label: t.navOverview, icon: LayoutDashboard },
+            {
+              id: 'students-section',
+              label: t.navStudents,
+              icon: GraduationCap,
+              badge: String(students.length),
+              subItems: [
+                { id: 'students-list', label: t.subNavAllStudents },
+                { id: 'students-unassigned', label: t.subNavUnassigned, badge: String(students.filter(s => s.teacher === 'Biriktirilmagan').length) },
+                { id: 'students-companies', label: t.subNavCompanies },
+                { id: 'students-logs', label: t.subNavLogs },
+              ]
+            },
+            { id: 'teachers', label: t.navTeachers, icon: BookOpen, badge: String(teachers.length) },
+            { id: 'contracts-pending', label: t.navContracts, icon: FileText, badge: String(applications.filter(a => a.status === 'SUBMITTED').length) },
+            { id: 'partners', label: t.navPartners, icon: Briefcase, badge: String(partners.length) },
+            { id: 'settings', label: t.navSettings, icon: Settings },
+          ]}
           activeTab={activeTab}
           onTabChange={(id) => {
             if (id === 'students-section' || id === 'contracts-section') return;
             setActiveTab(id);
           }}
           onLogout={() => router.push('/login')}
+          portalSubtitle={t.portalSubtitle}
+          logoutLabel={t.logout}
         />
 
         {/* Main Content Area */}
@@ -711,11 +1181,37 @@ export default function DekanatDashboard() {
                 DK{dekanatDigits}
               </span>
               <h1 className="text-sm font-bold text-zinc-900">
-                Fakultet Dekani: {deanName}
+                {lang === 'uz' ? `Fakultet Dekani: ${deanName}` : `Декан Факультета: ${deanName}`}
               </h1>
             </div>
 
             <div className="flex items-center space-x-3 relative">
+              {/* UZ / RU ONLY Language Switcher */}
+              <div className="flex items-center bg-zinc-100 p-0.5 rounded-xl border border-zinc-200/80 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => handleLanguageChange('uz')}
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all ${
+                    lang === 'uz'
+                      ? 'bg-white text-zinc-900 shadow-2xs'
+                      : 'text-zinc-500 hover:text-zinc-800'
+                  }`}
+                >
+                  UZ
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleLanguageChange('ru')}
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all ${
+                    lang === 'ru'
+                      ? 'bg-white text-zinc-900 shadow-2xs'
+                      : 'text-zinc-500 hover:text-zinc-800'
+                  }`}
+                >
+                  RU
+                </button>
+              </div>
+
               {/* Notification Popover Bell */}
               <div className="relative">
                 <button
@@ -1137,6 +1633,7 @@ export default function DekanatDashboard() {
                         <th className="p-3">Biriktirilgan Hujjat</th>
                         <th className="p-3">Holati</th>
                         <th className="p-3">Shartnoma №</th>
+                        <th className="p-3">Dekanat Izohi</th>
                         <th className="p-3 text-right">Amallar</th>
                       </tr>
                     </thead>
@@ -1158,15 +1655,27 @@ export default function DekanatDashboard() {
                           </td>
                           <td className="p-3">
                             <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${
-                              app.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
+                              app.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                              app.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
+                              'bg-amber-50 text-amber-700 border border-amber-200'
                             }`}>
-                              {app.status === 'APPROVED' ? 'TASDIQLANDI' : 'KUTILMOQDA'}
+                              {app.status === 'APPROVED' ? 'TASDIQLANDI' :
+                               app.status === 'REJECTED' ? 'RAD ETILDI' : 'KUTILMOQDA'}
                             </span>
                           </td>
                           <td className="p-3 font-mono font-bold text-blue-600">
                             {app.contractNo || '—'}
                           </td>
-                          <td className="p-3 text-right space-x-2">
+                          <td className="p-3 max-w-[200px]">
+                            {app.comment ? (
+                              <span className="text-[11px] text-zinc-600 italic truncate block" title={app.comment}>
+                                "{app.comment}"
+                              </span>
+                            ) : (
+                              <span className="text-[11px] text-zinc-400">—</span>
+                            )}
+                          </td>
+                          <td className="p-3 text-right space-x-2 whitespace-nowrap">
                             <button
                               onClick={() => setSelectedAppForView(app)}
                               className="px-2.5 py-1 bg-white border border-zinc-200 hover:border-zinc-900 text-zinc-700 rounded-xl text-[11px] font-medium transition-all shadow-2xs"
@@ -1175,15 +1684,16 @@ export default function DekanatDashboard() {
                             </button>
                             {app.status === 'SUBMITTED' ? (
                               <button
-                                onClick={() => handleApproveContract(app.id)}
+                                onClick={() => setSelectedAppForView(app)}
                                 className="px-3 py-1 bg-zinc-900 text-white rounded-xl text-[11px] font-medium hover:bg-zinc-800 shadow-xs"
+                                title="Arizani ko'rib chiqib qaror qabul qilish"
                               >
-                                Tasdiqlash
+                                Qaror qabul qilish
                               </button>
                             ) : (
                               <button
                                 onClick={() => {
-                                  setNotification(`Shartnoma ${app.contractNo} yuklab olindi!`);
+                                  setNotification(`Shartnoma ${app.contractNo || app.id} yuklab olindi!`);
                                   setTimeout(() => setNotification(null), 3000);
                                 }}
                                 className="inline-flex items-center space-x-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-[11px] font-medium border border-emerald-200 hover:bg-emerald-100"
@@ -1464,269 +1974,644 @@ export default function DekanatDashboard() {
               </div>
             )}
 
-            {/* TAB 9: SETTINGS */}
+            {/* TAB 9: SETTINGS - 6 EXPANDED BLOCKS */}
             {activeTab === 'settings' && (
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 gap-2">
                   <div>
-                    <h3 className="text-base font-bold text-zinc-900">Dekanat va Fakultet Sozlamalari</h3>
-                    <p className="text-xs text-zinc-500">Fakultet kirish ID raqami, rahbariyat rekvizitlari, amaliyot mavsumi sanalari va xavfsizlik sozlamalari.</p>
+                    <h3 className="text-base font-bold text-zinc-900">{t.settingsTitle}</h3>
+                    <p className="text-xs text-zinc-500">{t.settingsSubtitle}</p>
                   </div>
-                  <span className="text-xs font-mono font-bold text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-200">
-                    Joriy Login: DK{dekanatDigits}
+                  <span className="text-xs font-mono font-bold text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-200 self-start sm:self-auto">
+                    {t.currentLogin}: DK{dekanatDigits}
                   </span>
                 </div>
 
+                {/* Sub-navigation Pills for 6 Settings Blocks */}
+                <div className="flex flex-wrap gap-1.5 p-1 bg-zinc-100/90 rounded-2xl border border-zinc-200/70">
+                  {[
+                    { id: 'all', label: t.setTabAll },
+                    { id: 'profile', label: t.setTabProfile },
+                    { id: 'calendar', label: t.setTabCalendar },
+                    { id: 'legal', label: t.setTabLegal },
+                    { id: 'rules', label: t.setTabRules },
+                    { id: 'alerts', label: t.setTabAlerts },
+                    { id: 'security', label: t.setTabSecurity },
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setSettingsFilter(tab.id as any)}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition-all ${
+                        settingsFilter === tab.id
+                          ? 'bg-white text-zinc-900 shadow-2xs'
+                          : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200/60'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* 1. Dekanat Logini (ID raqami) */}
-                  <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-4">
-                    <div className="flex items-center space-x-3 pb-3 border-b border-zinc-100">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-                        <KeyRound className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-bold text-zinc-900">Fakultet Dekanati Logini (ID Raqami)</h4>
-                        <p className="text-xs text-zinc-500">Prefiks "DK" o'zgarmas, 6 ta raqamni istalgan raqamga o'zgartirish mumkin.</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <label className="block text-xs font-semibold text-zinc-700">Dekanat Login Identifikatori:</label>
-                      <div className="flex items-center space-x-2">
-                        <span className="px-3 py-2 bg-zinc-100 border border-zinc-300 rounded-xl font-mono font-bold text-xs text-zinc-700">
-                          DK
-                        </span>
-                        <input
-                          type="text"
-                          maxLength={6}
-                          value={tempDigits}
-                          onChange={(e) => {
-                            const val = e.target.value.replace(/\D/g, '');
-                            setTempDigits(val);
-                          }}
-                          placeholder="Masalan: 100001"
-                          className="flex-1 px-3 py-2 text-xs rounded-xl border border-zinc-200 font-mono font-bold text-zinc-900 focus:outline-none focus:border-zinc-900"
-                        />
-                        <button
-                          onClick={() => {
-                            if (tempDigits.length !== 6) {
-                              setNotification('Xatolik: Login raqami roppa-rosa 6 ta raqamdan iborat bo\'lishi shart!');
-                              setTimeout(() => setNotification(null), 3500);
-                              return;
-                            }
-                            setDekanatDigits(tempDigits);
-                            setNotification(`Dekanat logini muvaffaqiyatli "DK${tempDigits}" ga o'zgartirildi!`);
-                            setTimeout(() => setNotification(null), 3500);
-                          }}
-                          className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-colors shadow-xs"
-                        >
-                          Loginni Saqlash
-                        </button>
-                      </div>
-                      <p className="text-[11px] text-zinc-400">
-                        Saqlangandan so'ng yuqori paneldagi ID darhol yangilanadi va tizimga kirishda <b>DK{tempDigits}</b> hisoblanadi.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* 2. Rahbariyat Rekvizitlari */}
-                  <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-4">
-                    <div className="flex items-center space-x-3 pb-3 border-b border-zinc-100">
-                      <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                        <Building2 className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-bold text-zinc-900">Fakultet va Rahbariyat Rekvizitlari</h4>
-                        <p className="text-xs text-zinc-500">Rasmiy buyruqlarda (D1) va shartnomalarda ko'rinadigan ma'lumotlar.</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-zinc-700 mb-1">Fakultet To'liq Nomi:</label>
-                        <input
-                          type="text"
-                          value={facultyName}
-                          onChange={(e) => setFacultyName(e.target.value)}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* BLOCK 1: Fakultet va Rahbariyat Profili */}
+                  {(settingsFilter === 'all' || settingsFilter === 'profile') && (
+                    <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-4">
+                      <div className="flex items-center space-x-3 pb-3 border-b border-zinc-100">
+                        <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                          <Building2 className="w-5 h-5" />
+                        </div>
                         <div>
-                          <label className="block text-xs font-semibold text-zinc-700 mb-1">Dekan F.I.SH:</label>
+                          <h4 className="text-sm font-bold text-zinc-900">{t.block1Title}</h4>
+                          <p className="text-xs text-zinc-500">{t.block1Desc}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblFacultyName}</label>
                           <input
                             type="text"
-                            value={deanName}
-                            onChange={(e) => setDeanName(e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-medium"
+                            value={facultyName}
+                            onChange={(e) => setFacultyName(e.target.value)}
+                            className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900"
                           />
                         </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblDeanName}</label>
+                            <input
+                              type="text"
+                              value={deanName}
+                              onChange={(e) => setDeanName(e.target.value)}
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-medium"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblRoomNumber}</label>
+                            <input
+                              type="text"
+                              value={roomNumber}
+                              onChange={(e) => setRoomNumber(e.target.value)}
+                              placeholder="408-A"
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-medium"
+                            />
+                          </div>
+                        </div>
+
                         <div>
-                          <label className="block text-xs font-semibold text-zinc-700 mb-1">Xizmat Pochtasi:</label>
+                          <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblDeanDeputy}</label>
                           <input
-                            type="email"
-                            value={facultyEmail}
-                            onChange={(e) => setFacultyEmail(e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono"
+                            type="text"
+                            value={deanDeputy}
+                            onChange={(e) => setDeanDeputy(e.target.value)}
+                            className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900"
                           />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblFacultyPhone}</label>
+                            <input
+                              type="text"
+                              value={facultyPhone}
+                              onChange={(e) => setFacultyPhone(e.target.value)}
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblFacultyEmail}</label>
+                            <input
+                              type="email"
+                              value={facultyEmail}
+                              onChange={(e) => setFacultyEmail(e.target.value)}
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="pt-2 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNotification(lang === 'uz' ? "Fakultet va rahbariyat profili muvaffaqiyatli saqlandi!" : "Профиль руководства успешно сохранен!");
+                              setTimeout(() => setNotification(null), 3000);
+                            }}
+                            className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-colors shadow-xs"
+                          >
+                            {t.btnSaveProfile}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* BLOCK 2: Amaliyot Taqvimi va Muddatlar */}
+                  {(settingsFilter === 'all' || settingsFilter === 'calendar') && (
+                    <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-4">
+                      <div className="flex items-center space-x-3 pb-3 border-b border-zinc-100">
+                        <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                          <CalendarCheck className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-zinc-900">{t.block2Title}</h4>
+                          <p className="text-xs text-zinc-500">{t.block2Desc}</p>
                         </div>
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-semibold text-zinc-700 mb-1">Amaliyot Mas'uli (F.I.SH va Telefon):</label>
-                        <input
-                          type="text"
-                          value={deanDeputy}
-                          onChange={(e) => setDeanDeputy(e.target.value)}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900"
-                        />
-                      </div>
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblAcademicYear}</label>
+                            <input
+                              type="text"
+                              value={academicYear}
+                              onChange={(e) => setAcademicYear(e.target.value)}
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-medium"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblSemester}</label>
+                            <input
+                              type="text"
+                              value={semester}
+                              onChange={(e) => setSemester(e.target.value)}
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-medium"
+                            />
+                          </div>
+                        </div>
 
-                      <div className="pt-1 flex justify-end">
-                        <button
-                          onClick={() => {
-                            setNotification('Fakultet va rahbariyat rekvizitlari muvaffaqiyatli saqlandi!');
-                            setTimeout(() => setNotification(null), 3000);
-                          }}
-                          className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-colors shadow-xs"
-                        >
-                          Ma'lumotlarni Saqlash
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 3. Amaliyot Mavsumi Sanalari */}
-                  <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-4">
-                    <div className="flex items-center space-x-3 pb-3 border-b border-zinc-100">
-                      <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-                        <CalendarCheck className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-bold text-zinc-900">Amaliyot Mavsumi Sanalari (2025/2026)</h4>
-                        <p className="text-xs text-zinc-500">Ariza topshirish, amaliyot boshlanishi va tugash muddatlari.</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-zinc-700 mb-1">Ariza Topshirish Oxirgi Muddati (Deadline):</label>
-                        <input
-                          type="date"
-                          value={applicationDeadline}
-                          onChange={(e) => setApplicationDeadline(e.target.value)}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs font-semibold text-zinc-700 mb-1">Amaliyot Boshlanishi:</label>
+                          <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblAppDeadline}</label>
                           <input
                             type="date"
-                            value={practicumStart}
-                            onChange={(e) => setPracticumStart(e.target.value)}
+                            value={applicationDeadline}
+                            onChange={(e) => setApplicationDeadline(e.target.value)}
                             className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono"
                           />
                         </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-zinc-700 mb-1">Amaliyot Yakuni:</label>
-                          <input
-                            type="date"
-                            value={practicumEnd}
-                            onChange={(e) => setPracticumEnd(e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono"
-                          />
-                        </div>
-                      </div>
 
-                      <div className="pt-1 flex justify-end">
-                        <button
-                          onClick={() => {
-                            setNotification('Amaliyot mavsumi sanalari yangilandi va talabalarga e\'lon qilindi!');
-                            setTimeout(() => setNotification(null), 3000);
-                          }}
-                          className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-colors shadow-xs"
-                        >
-                          Muddatlarni Saqlash
-                        </button>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblPracticumStart}</label>
+                            <input
+                              type="date"
+                              value={practicumStart}
+                              onChange={(e) => setPracticumStart(e.target.value)}
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblPracticumEnd}</label>
+                            <input
+                              type="date"
+                              value={practicumEnd}
+                              onChange={(e) => setPracticumEnd(e.target.value)}
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblDailyLogTime}</label>
+                            <input
+                              type="time"
+                              value={dailyLogDeadlineTime}
+                              onChange={(e) => setDailyLogDeadlineTime(e.target.value)}
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblFinalDefenseDate}</label>
+                            <input
+                              type="date"
+                              value={finalDefenseDeadline}
+                              onChange={(e) => setFinalDefenseDeadline(e.target.value)}
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="pt-2 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNotification(lang === 'uz' ? "Amaliyot taqvimi va muddatlari muvaffaqiyatli saqlandi!" : "Календарь практики и сроки успешно сохранены!");
+                              setTimeout(() => setNotification(null), 3000);
+                            }}
+                            className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-colors shadow-xs"
+                          >
+                            {t.btnSaveCalendar}
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
-                  {/* 4. Xavfsizlik & Parol Yangilash */}
-                  <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-4">
-                    <div className="flex items-center space-x-3 pb-3 border-b border-zinc-100">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-                        <ShieldCheck className="w-5 h-5" />
+                  {/* BLOCK 3: Hujjatlar, Muhr va Yuridik Rekvizitlar */}
+                  {(settingsFilter === 'all' || settingsFilter === 'legal') && (
+                    <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-4">
+                      <div className="flex items-center space-x-3 pb-3 border-b border-zinc-100">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                          <FileCheck className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-zinc-900">{t.block3Title}</h4>
+                          <p className="text-xs text-zinc-500">{t.block3Desc}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="text-sm font-bold text-zinc-900">Xavfsizlik & Parol Yangilash</h4>
-                        <p className="text-xs text-zinc-500">Dekanat hisobining maxfiy parolini xavfsiz yangilang.</p>
+
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblOrderPrefix}</label>
+                            <input
+                              type="text"
+                              value={orderPrefix}
+                              onChange={(e) => setOrderPrefix(e.target.value)}
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblContractPrefix}</label>
+                            <input
+                              type="text"
+                              value={contractPrefix}
+                              onChange={(e) => setContractPrefix(e.target.value)}
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Official Seal Preview Card */}
+                        <div className="border border-zinc-200 rounded-xl p-3 bg-zinc-50/50 flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-12 h-12 rounded-full border-2 border-dashed border-zinc-300 flex items-center justify-center bg-white text-zinc-500 font-serif text-[9px] text-center p-1 shrink-0 font-bold">
+                              TIU SEAL
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-zinc-900">{sealFile}</p>
+                              <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-medium border border-emerald-200/60 inline-block mt-0.5">
+                                ● {lang === 'uz' ? 'Muhr faol (QR shartnomalar uchun)' : 'Печать активна (для QR-договоров)'}
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNotification(lang === 'uz' ? "Yangi rasmiy muhr fayli qabul qilindi!" : "Файл официальной печати обновлен!");
+                              setTimeout(() => setNotification(null), 3000);
+                            }}
+                            className="px-3 py-1.5 border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 rounded-xl text-xs font-medium transition-colors"
+                          >
+                            {t.btnUploadSeal}
+                          </button>
+                        </div>
+
+                        {/* Signature Preview Card */}
+                        <div className="border border-zinc-200 rounded-xl p-3 bg-zinc-50/50 flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-12 h-8 rounded-lg border-2 border-dashed border-zinc-300 flex items-center justify-center bg-white text-zinc-500 font-mono text-[9px] text-center shrink-0">
+                              E-SIGN
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-zinc-900">{signatureFile}</p>
+                              <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-medium border border-emerald-200/60 inline-block mt-0.5">
+                                ● {lang === 'uz' ? 'E-imzo faksimilesi tasdiqlangan' : 'Факсимиле подписи подтверждено'}
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNotification(lang === 'uz' ? "Dekan E-imzo faksimilesi muvaffaqiyatli yangilandi!" : "Факсимиле подписи декана успешно обновлено!");
+                              setTimeout(() => setNotification(null), 3000);
+                            }}
+                            className="px-3 py-1.5 border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 rounded-xl text-xs font-medium transition-colors"
+                          >
+                            {t.btnUploadSignature}
+                          </button>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblBankRequisites}</label>
+                          <textarea
+                            rows={2}
+                            value={bankRequisites}
+                            onChange={(e) => setBankRequisites(e.target.value)}
+                            className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono text-zinc-800"
+                          />
+                        </div>
+
+                        <div className="pt-2 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNotification(lang === 'uz' ? "Hujjatlar, muhr va yuridik rekvizitlar saqlandi!" : "Настройки документов и реквизиты сохранены!");
+                              setTimeout(() => setNotification(null), 3000);
+                            }}
+                            className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-colors shadow-xs"
+                          >
+                            {t.btnSaveLegal}
+                          </button>
+                        </div>
                       </div>
                     </div>
+                  )}
 
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-zinc-700 mb-1">Joriy Parol:</label>
-                        <input
-                          type="text"
-                          value={currentPass}
-                          onChange={(e) => setCurrentPass(e.target.value)}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 font-mono bg-zinc-50 text-zinc-700"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-xs font-semibold text-zinc-700 mb-1">Yangi Parol:</label>
-                          <input
-                            type="password"
-                            value={newPass}
-                            onChange={(e) => setNewPass(e.target.value)}
-                            placeholder="Kamida 6 ta belgi"
-                            className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono"
-                          />
+                  {/* BLOCK 4: Akademik Qoidalar va Cheklovlar */}
+                  {(settingsFilter === 'all' || settingsFilter === 'rules') && (
+                    <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-4">
+                      <div className="flex items-center space-x-3 pb-3 border-b border-zinc-100">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                          <ShieldCheck className="w-5 h-5" />
                         </div>
                         <div>
-                          <label className="block text-xs font-semibold text-zinc-700 mb-1">Yangi Parolni Tasdiqlang:</label>
-                          <input
-                            type="password"
-                            value={confirmPass}
-                            onChange={(e) => setConfirmPass(e.target.value)}
-                            placeholder="Takroran kiriting"
-                            className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono"
-                          />
+                          <h4 className="text-sm font-bold text-zinc-900">{t.block4Title}</h4>
+                          <p className="text-xs text-zinc-500">{t.block4Desc}</p>
                         </div>
                       </div>
 
-                      <div className="pt-1 flex justify-end">
-                        <button
-                          onClick={() => {
-                            if (!newPass || newPass.length < 6) {
-                              setNotification('Xatolik: Yangi parol kamida 6 ta belgidan iborat bo\'lishi kerak!');
+                      <div className="space-y-4">
+                        {/* Strict Max 3 Students per Teacher rule */}
+                        <div className="bg-indigo-50/70 border border-indigo-200/70 rounded-2xl p-4 space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+                              <ShieldCheck className="w-4 h-4 text-indigo-600" />
+                              {t.lblMaxStudentsRule}
+                            </span>
+                            <span className="px-2.5 py-0.5 bg-indigo-600 text-white font-mono font-bold text-xs rounded-lg">
+                              3 nafar
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-indigo-800 leading-relaxed">
+                            {t.maxStudentsRuleExplanation}
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblMinAttendance}</label>
+                            <input
+                              type="number"
+                              min={50}
+                              max={90}
+                              value={minAttendanceRate}
+                              onChange={(e) => setMinAttendanceRate(Number(e.target.value))}
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono font-bold"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblDefaultPassword}</label>
+                            <div className="flex items-center space-x-1.5">
+                              <input
+                                type="text"
+                                value={defaultStudentPassword}
+                                onChange={(e) => setDefaultStudentPassword(e.target.value)}
+                                className="flex-1 px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono font-bold"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(defaultStudentPassword);
+                                  setNotification(lang === 'uz' ? "Standart parol nusxalandi!" : "Пароль скопирован!");
+                                  setTimeout(() => setNotification(null), 2500);
+                                }}
+                                className="p-2 border border-zinc-200 hover:bg-zinc-100 rounded-xl text-zinc-600"
+                                title="Nusxalash"
+                              >
+                                <Copy className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Late Penalty Toggle Switch */}
+                        <div className="border border-zinc-200 rounded-xl p-3.5 bg-zinc-50/50 flex items-start space-x-3">
+                          <input
+                            type="checkbox"
+                            id="latePenaltyCheck"
+                            checked={lateSubmissionPenalty}
+                            onChange={(e) => setLateSubmissionPenalty(e.target.checked)}
+                            className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-zinc-900 mt-0.5 cursor-pointer"
+                          />
+                          <label htmlFor="latePenaltyCheck" className="text-xs text-zinc-700 cursor-pointer">
+                            <span className="font-semibold text-zinc-900 block">{t.lblLatePenaltyToggle}</span>
+                            <span className="text-[11px] text-zinc-500 mt-0.5 block leading-relaxed">{t.latePenaltyDesc}</span>
+                          </label>
+                        </div>
+
+                        <div className="pt-2 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNotification(lang === 'uz' ? "Akademik qoidalar va cheklovlar yangilandi!" : "Академические правила успешно обновлены!");
+                              setTimeout(() => setNotification(null), 3000);
+                            }}
+                            className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-colors shadow-xs"
+                          >
+                            {t.btnSaveRules}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* BLOCK 5: Favqulodda Xabarnomalar va Alertlar */}
+                  {(settingsFilter === 'all' || settingsFilter === 'alerts') && (
+                    <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-4">
+                      <div className="flex items-center space-x-3 pb-3 border-b border-zinc-100">
+                        <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+                          <AlertTriangle className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-zinc-900">{t.block5Title}</h4>
+                          <p className="text-xs text-zinc-500">{t.block5Desc}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3.5">
+                        <div className="border border-zinc-200 rounded-xl p-3 bg-zinc-50/50 flex items-start space-x-3">
+                          <input
+                            type="checkbox"
+                            id="alertAbsenceCheck"
+                            checked={alertConsecutiveAbsence}
+                            onChange={(e) => setAlertConsecutiveAbsence(e.target.checked)}
+                            className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-zinc-900 mt-0.5 cursor-pointer"
+                          />
+                          <label htmlFor="alertAbsenceCheck" className="text-xs text-zinc-700 cursor-pointer">
+                            <span className="font-semibold text-zinc-900 block">{t.lblAlertAbsence}</span>
+                          </label>
+                        </div>
+
+                        <div className="border border-zinc-200 rounded-xl p-3 bg-zinc-50/50 flex items-start space-x-3">
+                          <input
+                            type="checkbox"
+                            id="alertMissingContractCheck"
+                            checked={alertMissingContract}
+                            onChange={(e) => setAlertMissingContract(e.target.checked)}
+                            className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-zinc-900 mt-0.5 cursor-pointer"
+                          />
+                          <label htmlFor="alertMissingContractCheck" className="text-xs text-zinc-700 cursor-pointer">
+                            <span className="font-semibold text-zinc-900 block">{t.lblAlertMissingContract}</span>
+                          </label>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblTelegramIntegration}</label>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="text"
+                              value={telegramBotChatId}
+                              onChange={(e) => setTelegramBotChatId(e.target.value)}
+                              className="flex-1 px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setNotification(lang === 'uz' ? "Test xabarnomasi Telegram guruhga yuborildi!" : "Тестовое уведомление отправлено в Telegram!");
+                                setTimeout(() => setNotification(null), 3000);
+                              }}
+                              className="px-3.5 py-2 border border-zinc-200 bg-white hover:bg-zinc-100 text-zinc-700 rounded-xl text-xs font-medium transition-colors"
+                            >
+                              Test
+                            </button>
+                          </div>
+                          <span className="text-[10px] text-emerald-700 mt-1 block font-medium">
+                            {t.telegramActiveBadge}
+                          </span>
+                        </div>
+
+                        <div className="pt-2 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNotification(lang === 'uz' ? "Xabarnomalar va alert sozlamalari saqlandi!" : "Настройки оповещений успешно сохранены!");
+                              setTimeout(() => setNotification(null), 3000);
+                            }}
+                            className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-colors shadow-xs"
+                          >
+                            {t.btnSaveAlerts}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* BLOCK 6: Dekan Akkaunti Xavfsizligi */}
+                  {(settingsFilter === 'all' || settingsFilter === 'security') && (
+                    <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-4">
+                      <div className="flex items-center space-x-3 pb-3 border-b border-zinc-100">
+                        <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+                          <KeyRound className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-zinc-900">{t.block6Title}</h4>
+                          <p className="text-xs text-zinc-500">{t.block6Desc}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3.5">
+                        {/* Dekanat ID change */}
+                        <div>
+                          <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblDekanatId}</label>
+                          <div className="flex items-center space-x-2">
+                            <span className="px-3 py-2 bg-zinc-100 border border-zinc-300 rounded-xl font-mono font-bold text-xs text-zinc-700">
+                              DK
+                            </span>
+                            <input
+                              type="text"
+                              maxLength={6}
+                              value={tempDigits}
+                              onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, '');
+                                setTempDigits(val);
+                              }}
+                              placeholder="Masalan: 100001"
+                              className="flex-1 px-3 py-2 text-xs rounded-xl border border-zinc-200 font-mono font-bold text-zinc-900 focus:outline-none focus:border-zinc-900"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (tempDigits.length !== 6) {
+                                  setNotification(lang === 'uz' ? 'Xatolik: Login raqami roppa-rosa 6 ta raqamdan iborat bo\'lishi shart!' : 'Ошибка: Логин должен состоять ровно из 6 цифр!');
+                                  setTimeout(() => setNotification(null), 3500);
+                                  return;
+                                }
+                                setDekanatDigits(tempDigits);
+                                setNotification(lang === 'uz' ? `Dekanat logini muvaffaqiyatli "DK${tempDigits}" ga o'zgartirildi!` : `Логин деканата успешно изменен на "DK${tempDigits}"!`);
+                                setTimeout(() => setNotification(null), 3500);
+                              }}
+                              className="px-3.5 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-colors shadow-xs"
+                            >
+                              OK
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Password change */}
+                        <div>
+                          <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblCurrentPassword}</label>
+                          <input
+                            type="text"
+                            value={currentPass}
+                            onChange={(e) => setCurrentPass(e.target.value)}
+                            className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 font-mono bg-zinc-50 text-zinc-700"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblNewPassword}</label>
+                            <input
+                              type="password"
+                              value={newPass}
+                              onChange={(e) => setNewPass(e.target.value)}
+                              placeholder="••••••••"
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblConfirmPassword}</label>
+                            <input
+                              type="password"
+                              value={confirmPass}
+                              onChange={(e) => setConfirmPass(e.target.value)}
+                              placeholder="••••••••"
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="pt-2 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!newPass || newPass.length < 6) {
+                                setNotification(lang === 'uz' ? 'Xatolik: Yangi parol kamida 6 ta belgidan iborat bo\'lishi kerak!' : 'Ошибка: Новый пароль должен содержать не менее 6 символов!');
+                                setTimeout(() => setNotification(null), 3500);
+                                return;
+                              }
+                              if (newPass !== confirmPass) {
+                                setNotification(lang === 'uz' ? 'Xatolik: Yangi parol va tasdiqlash bir-biriga mos kelmadi!' : 'Ошибка: Пароли не совпадают!');
+                                setTimeout(() => setNotification(null), 3500);
+                                return;
+                              }
+                              setCurrentPass(newPass);
+                              setNewPass('');
+                              setConfirmPass('');
+                              setNotification(lang === 'uz' ? 'Dekanat maxfiy paroli muvaffaqiyatli yangilandi!' : 'Пароль деканата успешно обновлен!');
                               setTimeout(() => setNotification(null), 3500);
-                              return;
-                            }
-                            if (newPass !== confirmPass) {
-                              setNotification('Xatolik: Yangi parol va tasdiqlash bir-biriga mos kelmadi!');
-                              setTimeout(() => setNotification(null), 3500);
-                              return;
-                            }
-                            setCurrentPass(newPass);
-                            setNewPass('');
-                            setConfirmPass('');
-                            setNotification('Dekanat maxfiy paroli muvaffaqiyatli yangilandi!');
-                            setTimeout(() => setNotification(null), 3500);
-                          }}
-                          className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-colors shadow-xs"
-                        >
-                          Parolni Yangilash
-                        </button>
+                            }}
+                            className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-colors shadow-xs"
+                          >
+                            {t.btnSaveSecurity}
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1742,7 +2627,7 @@ export default function DekanatDashboard() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-              <h3 className="text-sm font-bold text-zinc-900">Yangi Talaba Qo'shish</h3>
+              <h3 className="text-sm font-bold text-zinc-900">{t.modalAddStudentTitle}</h3>
               <button onClick={() => setIsStudentModalOpen(false)} className="text-zinc-400 hover:text-zinc-600">
                 <X className="w-5 h-5" />
               </button>
@@ -1750,33 +2635,31 @@ export default function DekanatDashboard() {
 
             <form onSubmit={handleCreateStudent} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">Talaba F.I.SH *</label>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblStudentName}</label>
                 <input
                   type="text"
                   required
                   value={newStudent.name}
                   onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })}
-                  placeholder="Masalan: Azizbek Olimov"
+                  placeholder={t.phStudentName}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">Guruh *</label>
-                <select
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblGroup}</label>
+                <input
+                  type="text"
+                  required
                   value={newStudent.group}
                   onChange={(e) => setNewStudent({ ...newStudent, group: e.target.value })}
+                  placeholder={t.phGroup}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 bg-white"
-                >
-                  <option value="DI-202-22">DI-202-22</option>
-                  <option value="DI-201-22">DI-201-22</option>
-                  <option value="AI-101-23">AI-101-23</option>
-                  <option value="DT-207-22">DT-207-22</option>
-                </select>
+                />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">Telefon Raqami *</label>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblPhone}</label>
                 <input
                   type="text"
                   required
@@ -1786,41 +2669,62 @@ export default function DekanatDashboard() {
                 />
               </div>
 
-              {/* Optional Teacher */}
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                  Biriktiriladigan Ustoz <span className="text-zinc-400 font-normal">(Ixtiyoriy)</span>
+              {/* Optional Teacher with Search */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-zinc-700">
+                  {t.lblAssignTeacher}
                 </label>
+
+                {/* Search input for teachers */}
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-2.5" />
+                  <input
+                    type="text"
+                    value={teacherSearchQuery}
+                    onChange={(e) => setTeacherSearchQuery(e.target.value)}
+                    placeholder={t.phSearchTeacher}
+                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-zinc-200 focus:outline-none focus:border-zinc-900 bg-zinc-50/50"
+                  />
+                </div>
+
                 <select
                   value={newStudent.teacher}
                   onChange={(e) => setNewStudent({ ...newStudent, teacher: e.target.value })}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 bg-white text-zinc-700"
                 >
-                  <option value="">-- Biriktirilmasin (Keyinroq biriktirish) --</option>
-                  {teachers.map(tc => {
-                    const count = students.filter(s => s.teacher === tc.name).length;
-                    return (
-                      <option key={tc.id} value={tc.name} disabled={count >= 3}>
-                        {tc.name} ({count}/3 nafar {count >= 3 ? "- To'lgan" : "yuklama"})
-                      </option>
-                    );
-                  })}
+                  <option value="">{t.optNoTeacher}</option>
+                  {teachers
+                    .filter(tc => !teacherSearchQuery.trim() || tc.name.toLowerCase().includes(teacherSearchQuery.toLowerCase()))
+                    .map(tc => {
+                      const count = students.filter(s => s.teacher === tc.name).length;
+                      const isFull = count >= 3;
+                      return (
+                        <option key={tc.id} value={tc.name} disabled={isFull}>
+                          {tc.name} ({count}/3 {isFull ? (lang === 'uz' ? "- To'lgan" : "- Заполнено") : (lang === 'uz' ? "biriktirilgan" : "прикреплено")})
+                        </option>
+                      );
+                    })}
                 </select>
+                {teacherSearchQuery && (
+                  <p className="text-[10px] text-zinc-400">
+                    {lang === 'uz' ? `Qidiruv bo'yicha ${teachers.filter(tc => tc.name.toLowerCase().includes(teacherSearchQuery.toLowerCase())).length} ta ustoz topildi` : `Найдено преподавателей: ${teachers.filter(tc => tc.name.toLowerCase().includes(teacherSearchQuery.toLowerCase())).length}`}
+                  </p>
+                )}
               </div>
 
               {/* Optional Company */}
               <div>
                 <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                  Amaliyot Korxonasi <span className="text-zinc-400 font-normal">(Ixtiyoriy)</span>
+                  {t.lblAssignCompany}
                 </label>
                 <select
                   value={newStudent.company}
                   onChange={(e) => setNewStudent({ ...newStudent, company: e.target.value })}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 bg-white text-zinc-700"
                 >
-                  <option value="">-- Tanlanmasin (Keyinroq biriktirish) --</option>
+                  <option value="">{t.optNoCompany}</option>
                   {partners.map(pr => (
-                    <option key={pr.id} value={pr.name}>{pr.name}</option>
+                    <option key={pr.id} value={pr.name}>{pr.name} ({pr.category})</option>
                   ))}
                 </select>
               </div>
@@ -1830,7 +2734,7 @@ export default function DekanatDashboard() {
                   type="submit"
                   className="w-full py-2.5 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 shadow-sm transition-all"
                 >
-                  Talabani Qo'shish & Login Yaratish
+                  {t.btnSubmitStudent}
                 </button>
               </div>
             </form>
@@ -1843,7 +2747,7 @@ export default function DekanatDashboard() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-              <h3 className="text-sm font-bold text-zinc-900">Yangi Kafedra Ustozini Qo'shish</h3>
+              <h3 className="text-sm font-bold text-zinc-900">{t.modalAddTeacherTitle}</h3>
               <button onClick={() => setIsTeacherModalOpen(false)} className="text-zinc-400 hover:text-zinc-600">
                 <X className="w-5 h-5" />
               </button>
@@ -1851,61 +2755,52 @@ export default function DekanatDashboard() {
 
             <form onSubmit={handleCreateTeacher} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">Ustoz F.I.SH *</label>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblTeacherName}</label>
                 <input
                   type="text"
                   required
                   value={newTeacher.name}
                   onChange={(e) => setNewTeacher({ ...newTeacher, name: e.target.value })}
-                  placeholder="Masalan: Dotsent Jamshid Karimov"
+                  placeholder={t.phTeacherName}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">Kafedra / Departament *</label>
-                <select
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblDepartment}</label>
+                <input
+                  type="text"
                   required
                   value={newTeacher.department}
                   onChange={(e) => setNewTeacher({ ...newTeacher, department: e.target.value })}
+                  placeholder={t.phDepartment}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 bg-white"
-                >
-                  <option value="Axborot texnologiyalari kafedrasi">Axborot texnologiyalari kafedrasi</option>
-                  <option value="Dasturiy injiniring kafedrasi">Dasturiy injiniring kafedrasi</option>
-                  <option value="Kiberxavfsizlik va tarmoqlar kafedrasi">Kiberxavfsizlik va tarmoqlar kafedrasi</option>
-                  <option value="Sun'iy intellekt va algoritmlar kafedrasi">Sun'iy intellekt va algoritmlar kafedrasi</option>
-                  <option value="Raqamli iqtisodiyot departamenti">Raqamli iqtisodiyot departamenti</option>
-                </select>
+                />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">Ilmiy Unvon / Lavozim *</label>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.lblDegree}</label>
                 <input
                   type="text"
                   required
                   value={newTeacher.degree}
                   onChange={(e) => setNewTeacher({ ...newTeacher, degree: e.target.value })}
-                  placeholder="Masalan: Dotsent, PhD, professor yoki Katta o'qituvchi"
+                  placeholder={t.phDegree}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">Maksimal Amaliyotchi Kvotasi *</label>
-                <input
-                  type="number"
-                  required
-                  min={1}
-                  max={3}
-                  defaultValue={3}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-700 font-mono"
-                  readOnly
-                />
-                <p className="text-[10px] text-zinc-400 mt-0.5">Fakultet standarti: eng ko'pi 3 nafar talaba biriktirish mumkin</p>
+              {/* Fixed 3-Student Policy Info */}
+              <div className="bg-zinc-50 border border-zinc-200/80 rounded-xl p-3 flex items-start space-x-2.5">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <div className="text-[11px] text-zinc-600 leading-snug">
+                  <span className="font-semibold text-zinc-900 block">{t.fixedQuotaTitle}</span>
+                  {t.fixedQuotaDesc}
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">Telefon Raqami *</label>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">{t.thPhone} *</label>
                 <input
                   type="text"
                   required
@@ -1920,7 +2815,7 @@ export default function DekanatDashboard() {
                   type="submit"
                   className="w-full py-2.5 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 shadow-sm transition-all"
                 >
-                  Ustozni Qo'shish & TC Login Yaratish
+                  {t.btnSubmitTeacher}
                 </button>
               </div>
             </form>
@@ -2212,26 +3107,26 @@ export default function DekanatDashboard() {
             {/* Meta cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-zinc-50 p-4 rounded-2xl border border-zinc-200 text-xs">
               <div>
-                <span className="text-[10px] text-zinc-400 block">Talaba F.I.SH</span>
+                <span className="text-[10px] text-zinc-400 block">{t.thStudentName}</span>
                 <span className="font-bold text-zinc-900">{selectedAppForView.studentName}</span>
               </div>
               <div>
-                <span className="text-[10px] text-zinc-400 block">Guruh</span>
+                <span className="text-[10px] text-zinc-400 block">{t.thGroup}</span>
                 <span className="font-semibold text-zinc-800">{selectedAppForView.group}</span>
               </div>
               <div>
-                <span className="text-[10px] text-zinc-400 block">Amaliyot Korxonasi</span>
+                <span className="text-[10px] text-zinc-400 block">{t.thCompany}</span>
                 <span className="font-semibold text-zinc-800">{selectedAppForView.company}</span>
               </div>
               <div>
-                <span className="text-[10px] text-zinc-400 block">Holat</span>
+                <span className="text-[10px] text-zinc-400 block">{t.thStatus}</span>
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold inline-block mt-0.5 ${
                   selectedAppForView.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' :
                   selectedAppForView.status === 'REJECTED' ? 'bg-rose-100 text-rose-800' :
                   'bg-amber-100 text-amber-800'
                 }`}>
-                  {selectedAppForView.status === 'APPROVED' ? 'TASDIQLANDI' :
-                   selectedAppForView.status === 'REJECTED' ? 'RAD ETILDI' : 'KUTILMOQDA'}
+                  {selectedAppForView.status === 'APPROVED' ? t.statusApproved :
+                   selectedAppForView.status === 'REJECTED' ? t.statusRejected : t.statusPending}
                 </span>
               </div>
             </div>
@@ -2249,19 +3144,20 @@ export default function DekanatDashboard() {
                       {selectedAppForView.docFile?.endsWith('.docx') ? 'DOCX' : 'PDF'}
                     </span>
                   </div>
-                  <p className="text-[11px] text-zinc-400 mt-0.5">Hajmi: 284 KB • Talaba tomonidan yuklangan rasmiy ariza va imzolangan shartnoma</p>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">{lang === 'uz' ? 'Hajmi: 284 KB • Talaba tomonidan yuklangan rasmiy ariza va shartnoma' : 'Размер: 284 КБ • Официальное заявление и подписанный договор студента'}</p>
                 </div>
               </div>
 
               <button
+                type="button"
                 onClick={() => {
-                  setNotification(`"${selectedAppForView.docFile || 'shartnoma.pdf'}" fayli brauzerda ochildi va yuklab olindi!`);
+                  setNotification(lang === 'uz' ? `"${selectedAppForView.docFile || 'shartnoma.pdf'}" fayli brauzerda ochildi va yuklab olindi!` : `Файл "${selectedAppForView.docFile || 'договор.pdf'}" открыт и скачан!`);
                   setTimeout(() => setNotification(null), 3000);
                 }}
                 className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-xl text-xs font-medium transition-colors"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Yuklab Olish</span>
+                <span>{lang === 'uz' ? 'Yuklab Olish' : 'Скачать'}</span>
               </button>
             </div>
 
@@ -2269,20 +3165,30 @@ export default function DekanatDashboard() {
             <div className="border border-zinc-200 rounded-2xl p-6 bg-zinc-50/50 space-y-4 font-serif text-zinc-800 text-xs leading-relaxed max-h-64 overflow-y-auto">
               <div className="text-center space-y-1 pb-3 border-b border-zinc-300">
                 <p className="font-bold text-xs tracking-wider uppercase text-zinc-900">Toshkent Xalqaro Universiteti (TIU)</p>
-                <p className="font-sans text-[10px] text-zinc-500 uppercase">Talabalar Malakaviy Ishlab Chiqarish Amaliyoti Shartnomasi</p>
+                <p className="font-sans text-[10px] text-zinc-500 uppercase">{lang === 'uz' ? 'Talabalar Malakaviy Ishlab Chiqarish Amaliyoti Shartnomasi' : 'Договор о прохождении производственной квалификационной практики'}</p>
                 <p className="font-mono text-[11px] font-bold text-blue-600">
-                  {selectedAppForView.contractNo ? `Shartnoma №: ${selectedAppForView.contractNo}` : 'Loyiha holatidagi shartnoma (Kutilmoqda)'}
+                  {selectedAppForView.contractNo ? `${lang === 'uz' ? 'Shartnoma' : 'Договор'} №: ${selectedAppForView.contractNo}` : (lang === 'uz' ? 'Loyiha holatidagi shartnoma (Kutilmoqda)' : 'Проект договора (Ожидание)')}
                 </p>
               </div>
 
               <div className="font-sans text-xs space-y-2">
                 <p className="text-justify">
-                  Bir tomondan <b>Toshkent Xalqaro Universiteti</b> (Dekan: {deanName}), ikkinchi tomondan <b>"{selectedAppForView.company}"</b> tashkiloti, uchinchi tomondan talaba <b>{selectedAppForView.studentName}</b> ({selectedAppForView.group} guruhi) o'rtasida 2026-yilgi amaliyot davrini tashkil etish bo'yicha mazkur shartnoma tuzildi.
+                  {lang === 'uz' ? (
+                    <>Bir tomondan <b>Toshkent Xalqaro Universiteti</b> (Dekan: {deanName}), ikkinchi tomondan <b>"{selectedAppForView.company}"</b> tashkiloti, uchinchi tomondan talaba <b>{selectedAppForView.studentName}</b> ({selectedAppForView.group} guruhi) o'rtasida 2026-yilgi amaliyot davrini tashkil etish bo'yicha mazkur shartnoma tuzildi.</>
+                  ) : (
+                    <>С одной стороны <b>Ташкентский Международный Университет</b> (Декан: {deanName}), с другой стороны организация <b>"{selectedAppForView.company}"</b>, с третьей стороны студент <b>{selectedAppForView.studentName}</b> (группа {selectedAppForView.group}) заключили настоящий договор об организации периода практики на 2026 год.</>
+                  )}
                 </p>
                 <p className="text-justify">
-                  1. Talaba tashkilotning ichki tartib-qoidalariga rioya qiladi va kunlik hisobotlarni platformaga taqdim etadi.<br />
-                  2. Korxona talabaga amaliyot o'tash joyi va malakali mentor biriktiradi.<br />
-                  3. Universitet amaliyotning o'quv rejasiga muvofiqligini nazorat qiladi.
+                  {lang === 'uz' ? (
+                    <>1. Talaba tashkilotning ichki tartib-qoidalariga rioya qiladi va kunlik hisobotlarni platformaga taqdim etadi.<br />
+                    2. Korxona talabaga amaliyot o'tash joyi va malakali mentor biriktiradi.<br />
+                    3. Universitet amaliyotning o'quv rejasiga muvofiqligini nazorat qiladi.</>
+                  ) : (
+                    <>1. Студент соблюдает внутренний распорядок организации и ежедневно заполняет дневник практики на платформе.<br />
+                    2. Организация предоставляет студенту рабочее место и квалифицированного ментора.<br />
+                    3. Университет контролирует соответствие практики учебному плану.</>
+                  )}
                 </p>
               </div>
 
@@ -2294,52 +3200,86 @@ export default function DekanatDashboard() {
               </div>
             </div>
 
+            {/* Optional Comment Input / Status Display */}
+            <div className="bg-white border border-zinc-200/90 rounded-2xl p-4 space-y-2">
+              <label className="block text-xs font-semibold text-zinc-900">
+                {t.commentLabel}
+              </label>
+              {selectedAppForView.status === 'SUBMITTED' ? (
+                <div>
+                  <textarea
+                    rows={2}
+                    value={decisionComment}
+                    onChange={(e) => setDecisionComment(e.target.value)}
+                    placeholder={t.commentPlaceholder}
+                    className="w-full text-xs p-3 rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 bg-zinc-50/50"
+                  />
+                  <p className="text-[10px] text-zinc-400 mt-1">{t.commentNotice}</p>
+                </div>
+              ) : (
+                <div className="bg-zinc-50 rounded-xl p-3 text-xs border border-zinc-200/60">
+                  <p className="text-zinc-700 italic">
+                    "{selectedAppForView.comment || (selectedAppForView.status === 'APPROVED' ? (lang === 'uz' ? 'Hujjatlar to\'liq, amaliyotga ruxsat berildi' : 'Документы в порядке, практика разрешена') : (lang === 'uz' ? 'Ariza qayta ko\'rib chiqish uchun qaytarildi' : 'Заявление возвращено на доработку'))}"
+                  </p>
+                  <span className="text-[10px] text-zinc-400 mt-1 block">{lang === 'uz' ? 'Dekanat qarori izohi' : 'Решение и комментарий деканата'}</span>
+                </div>
+              )}
+            </div>
+
             {/* Footer Decisions */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-zinc-100">
               <button
-                onClick={() => setSelectedAppForView(null)}
+                type="button"
+                onClick={() => {
+                  setSelectedAppForView(null);
+                  setDecisionComment('');
+                }}
                 className="w-full sm:w-auto px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl text-xs font-medium"
               >
-                Yopish
+                {t.close}
               </button>
 
               <div className="w-full sm:w-auto flex items-center space-x-2">
                 {selectedAppForView.status === 'SUBMITTED' ? (
                   <>
                     <button
+                      type="button"
                       onClick={() => handleRejectContract(selectedAppForView.id)}
                       className="flex-1 sm:flex-none px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-medium transition-colors"
                     >
-                      Rad Etish
+                      {t.btnReject}
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleApproveContract(selectedAppForView.id)}
                       className="flex-1 sm:flex-none px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-medium transition-colors shadow-sm"
                     >
-                      Tasdiqlash & QR Shartnoma
+                      {t.btnApprove}
                     </button>
                   </>
                 ) : selectedAppForView.status === 'APPROVED' ? (
                   <div className="flex items-center space-x-2">
                     <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
-                      Tasdiqlangan: {selectedAppForView.contractNo}
+                      {lang === 'uz' ? 'Tasdiqlangan' : 'Утверждено'}: {selectedAppForView.contractNo}
                     </span>
                     <button
+                      type="button"
                       onClick={() => {
-                        setNotification(`Shartnoma ${selectedAppForView.contractNo} yuklab olindi!`);
+                        setNotification(lang === 'uz' ? `Shartnoma ${selectedAppForView.contractNo} yuklab olindi!` : `Договор ${selectedAppForView.contractNo} скачан!`);
                         setTimeout(() => setNotification(null), 3000);
                       }}
                       className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800"
                     >
-                      PDF Yuklash
+                      {t.btnDownloadPdf}
                     </button>
                   </div>
                 ) : (
                   <button
+                    type="button"
                     onClick={() => handleApproveContract(selectedAppForView.id)}
                     className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800"
                   >
-                    Qayta Ko'rib Chiqish & Tasdiqlash
+                    {lang === 'uz' ? "Qayta Ko'rib Chiqish & Tasdiqlash" : 'Пересмотреть и Утвердить'}
                   </button>
                 )}
               </div>

@@ -43,6 +43,8 @@ interface CollapsibleSidebarProps {
   activeTab: string;
   onTabChange: (id: any) => void;
   onLogout: () => void;
+  portalSubtitle?: string;
+  logoutLabel?: string;
 }
 
 export default function CollapsibleSidebar({
@@ -54,7 +56,9 @@ export default function CollapsibleSidebar({
   items,
   activeTab,
   onTabChange,
-  onLogout
+  onLogout,
+  portalSubtitle,
+  logoutLabel
 }: CollapsibleSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -308,13 +312,13 @@ export default function CollapsibleSidebar({
           </button>
 
           <div className="flex flex-col items-center w-full">
-            <div className={`${isCollapsed ? 'h-10 w-10' : 'h-20 sm:h-24 w-auto'} flex items-center justify-center shrink-0 mb-2 transition-all mx-auto`}>
-              <img src="/tiu-official-logo.png" alt="Tashkent International University" className="h-full w-full object-contain" />
+            <div className={`${isCollapsed ? 'h-10 w-10' : 'h-24 sm:h-28 w-auto max-w-[220px]'} flex items-center justify-center shrink-0 mb-2.5 transition-all mx-auto`}>
+              <img src="/tiu-official-logo.png" alt="Tashkent International University" className="h-full w-auto max-h-28 object-contain" />
             </div>
             {!isCollapsed && (
               <div className="transition-all duration-300 w-full px-1 text-center">
                 <h2 className="text-xs font-bold text-zinc-900 tracking-tight leading-snug">Tashkent International University</h2>
-                <p className="text-[10px] text-zinc-500 font-medium mt-0.5">Amaliyot Boshqaruv Portali</p>
+                <p className="text-[10px] text-zinc-500 font-medium mt-0.5">{portalSubtitle || "Amaliyot Boshqaruv Portali"}</p>
               </div>
             )}
           </div>
@@ -347,13 +351,13 @@ export default function CollapsibleSidebar({
 
         <button
           onClick={onLogout}
-          title={isCollapsed ? "Tizimdan chiqish" : undefined}
+          title={isCollapsed ? (logoutLabel || "Tizimdan chiqish") : undefined}
           className={`w-full flex items-center rounded-xl text-xs font-medium text-zinc-500 hover:text-rose-600 hover:bg-rose-50 transition-colors border border-transparent hover:border-rose-100 ${
             isCollapsed ? 'justify-center p-3' : 'px-3.5 py-2.5 space-x-3'
           }`}
         >
           <LogOut className="w-4 h-4 shrink-0" />
-          {!isCollapsed && <span>Tizimdan chiqish</span>}
+          {!isCollapsed && <span>{logoutLabel || "Tizimdan chiqish"}</span>}
         </button>
       </div>
     </div>
@@ -446,7 +450,7 @@ export default function CollapsibleSidebar({
               className="w-full flex items-center rounded-xl text-xs font-medium text-zinc-500 hover:text-rose-600 hover:bg-rose-50 transition-colors border border-transparent hover:border-rose-100 px-3.5 py-2.5 space-x-3"
             >
               <LogOut className="w-4 h-4 shrink-0" />
-              <span>Tizimdan chiqish</span>
+              <span>{logoutLabel || "Tizimdan chiqish"}</span>
             </button>
           </div>
         </div>
