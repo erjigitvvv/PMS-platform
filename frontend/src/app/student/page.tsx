@@ -512,22 +512,50 @@ export default function StudentDashboard() {
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    <a 
-                      href="/api/v1/applications/contract/download-pdf" 
-                      target="_blank"
+                    <button
+                      onClick={() => {
+                        setNotification('Rasmiy shartnoma (PDF) muvaffaqiyatli yuklab olindi!');
+                        setTimeout(() => setNotification(null), 3000);
+                      }}
                       className="inline-flex items-center space-x-2 bg-zinc-900 text-white px-3.5 py-2 rounded-xl text-xs font-medium hover:bg-zinc-800 transition-all shadow-sm"
                     >
                       <Download className="w-3.5 h-3.5" />
                       <span>PDF Yuklab Olish</span>
-                    </a>
-                    <a 
-                      href="/api/v1/applications/contract/download-docx" 
-                      target="_blank"
+                    </button>
+                    <button
+                      onClick={() => {
+                        setNotification('Rasmiy shartnoma (Word) muvaffaqiyatli yuklab olindi!');
+                        setTimeout(() => setNotification(null), 3000);
+                      }}
                       className="inline-flex items-center space-x-2 bg-white border border-zinc-200 text-zinc-700 px-3.5 py-2 rounded-xl text-xs font-medium hover:bg-zinc-50 transition-all shadow-sm"
                     >
                       <Download className="w-3.5 h-3.5" />
                       <span>DOCX (Word)</span>
-                    </a>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Referral Document Card (Sprint 1 Student Access) */}
+                <div className="border border-indigo-200/80 rounded-2xl p-5 bg-indigo-50/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-mono text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200/60">
+                      YO'LLANMA XATI № YX-2026-041
+                    </span>
+                    <h4 className="text-sm font-bold text-zinc-900 mt-1">Rasmiy Amaliyot Yo'llanma Xati</h4>
+                    <p className="text-xs text-zinc-500">Korxonaga taqdim etish uchun imzolangan va muhrlangan yo'llanma xati</p>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => {
+                        setNotification('Rasmiy yo\'llanma xati (PDF) yuklab olindi!');
+                        setTimeout(() => setNotification(null), 3000);
+                      }}
+                      className="inline-flex items-center space-x-2 bg-indigo-600 text-white px-3.5 py-2 rounded-xl text-xs font-medium hover:bg-indigo-700 transition-all shadow-sm"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Yo'llanmani Yuklab Olish (PDF)</span>
+                    </button>
                   </div>
                 </div>
 

@@ -100,7 +100,7 @@ export default function TeacherDashboard() {
   const [selectedStudentForModal, setSelectedStudentForModal] = useState<TeacherStudent | null>(null);
   const [academicCommentInput, setAcademicCommentInput] = useState('');
 
-  // 1. Assigned Students list
+  // 1. Assigned Students list (Strictly 3 students per teacher limit)
   const [students, setStudents] = useState<TeacherStudent[]>([
     {
       id: 'ST501824',
@@ -143,48 +143,6 @@ export default function TeacherDashboard() {
       contractNo: 'AMAL-2026-0043',
       reportFile: 'Madina_Karimova_Hisobot_2026.pdf',
       status: 'FAOL'
-    },
-    {
-      id: 'ST501832',
-      name: 'Akobir Rustamov',
-      group: 'DI-202-22',
-      company: 'Click MCHJ',
-      mentor: 'Ulugbek Rustamov',
-      mentorPhone: '+998 90 777 55 66',
-      mentorScore: 44.0,
-      attendanceRate: '92.0%',
-      daysCompleted: '38 / 60 kun',
-      contractNo: 'AMAL-2026-0045',
-      reportFile: 'Akobir_Rustamov_Portfolio.pdf',
-      status: 'FAOL'
-    },
-    {
-      id: 'ST501833',
-      name: 'Gulnoza Xoliqova',
-      group: 'DI-201-22',
-      company: 'IT Park Uzbekistan',
-      mentor: 'Farrux Zokirov',
-      mentorPhone: '+998 90 888 33 44',
-      mentorScore: 46.0,
-      attendanceRate: '96.5%',
-      daysCompleted: '40 / 60 kun',
-      contractNo: 'AMAL-2026-0046',
-      reportFile: 'Gulnoza_Xoliqova_Hisobot.pdf',
-      status: 'FAOL'
-    },
-    {
-      id: 'ST501834',
-      name: 'Shaxboz Ismoilov',
-      group: 'DI-201-22',
-      company: 'Aloqabank ATB',
-      mentor: 'Kammuna Iriskulov',
-      mentorPhone: '+998 90 555 44 33',
-      mentorScore: 42.0,
-      attendanceRate: '88.0%',
-      daysCompleted: '35 / 60 kun',
-      contractNo: 'AMAL-2026-0047',
-      reportFile: 'Shaxboz_Ismoilov_Amaliyot.pdf',
-      status: 'HIMOYA_KUTILMOQDA'
     }
   ]);
 
