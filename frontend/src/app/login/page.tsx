@@ -103,7 +103,7 @@ export default function LoginPage() {
       </div>
 
       {/* Main Card */}
-      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0 animate-in fade-in zoom-in-95 duration-300 ease-out">
         <div className="bg-white py-8 px-6 sm:px-8 border border-zinc-200/80 rounded-2xl shadow-subtle space-y-5">
           
           {/* Error Alert */}
