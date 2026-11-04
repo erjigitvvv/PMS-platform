@@ -1145,18 +1145,7 @@ export default function DekanatDashboard() {
           userBadge={`DK${dekanatDigits}`}
           items={[
             { id: 'overview', label: t.navOverview, icon: LayoutDashboard },
-            {
-              id: 'students-section',
-              label: t.navStudents,
-              icon: GraduationCap,
-              badge: String(students.length),
-              subItems: [
-                { id: 'students-list', label: t.subNavAllStudents },
-                { id: 'students-unassigned', label: t.subNavUnassigned, badge: String(students.filter(s => s.teacher === 'Biriktirilmagan').length) },
-                { id: 'students-companies', label: t.subNavCompanies },
-                { id: 'students-logs', label: t.subNavLogs },
-              ]
-            },
+            { id: 'students-list', label: t.navStudents, icon: GraduationCap, badge: String(students.length) },
             { id: 'teachers', label: t.navTeachers, icon: BookOpen, badge: String(teachers.length) },
             { id: 'contracts-pending', label: t.navContracts, icon: FileText, badge: String(applications.filter(a => a.status === 'SUBMITTED').length) },
             { id: 'partners', label: t.navPartners, icon: Briefcase, badge: String(partners.length) },
@@ -1425,16 +1414,16 @@ export default function DekanatDashboard() {
                     />
                   </div>
 
-                  {/* Group Filter Pills */}
-                  <div className="flex items-center space-x-2 overflow-x-auto w-full lg:w-auto pb-1">
+                  {/* Group Filter Pills - Segmented Control Capsule */}
+                  <div className="bg-zinc-100/90 p-1 rounded-xl border border-zinc-200/80 inline-flex items-center gap-1 shadow-inner overflow-x-auto w-full lg:w-auto">
                     {['ALL', 'DI-202-22', 'DI-201-22', 'AI-101-23'].map(g => (
                       <button
                         key={g}
                         onClick={() => setGroupFilter(g)}
-                        className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+                        className={`rounded-lg px-3.5 py-1.5 text-xs transition-all duration-200 shrink-0 ${
                           groupFilter === g
-                            ? 'bg-zinc-900 text-white shadow-xs'
-                            : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                            ? 'bg-white text-zinc-900 shadow-xs font-semibold scale-[1.02]'
+                            : 'text-zinc-500 hover:text-zinc-900 font-medium'
                         }`}
                       >
                         {g === 'ALL' ? 'Barcha guruhlar' : g}
@@ -1589,9 +1578,9 @@ export default function DekanatDashboard() {
                                     {Math.round((assignedCount / 3) * 100)}%
                                   </span>
                                 </div>
-                                <div className="w-full bg-zinc-100 rounded-full h-1.5">
+                                <div className="w-full bg-zinc-100 rounded-full h-2 overflow-hidden">
                                   <div
-                                    className={`h-1.5 rounded-full transition-all ${badgeInfo.barColor}`}
+                                    className={`h-2 rounded-full transition-all duration-700 ease-out bg-gradient-to-r from-blue-600 to-indigo-600 ${badgeInfo.barColor}`}
                                     style={{ width: `${Math.min((assignedCount / 3) * 100, 100)}%` }}
                                   />
                                 </div>
