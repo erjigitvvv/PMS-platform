@@ -75,7 +75,7 @@ const TEACHER_NAV_ITEMS: NavItem[] = [
       { id: 'grading-100', label: '100 Ballik ECTS Baholash', icon: Award, badge: 'ECTS' }
     ]
   },
-  { id: 'students', label: 'Biriktirilgan Talabalar', icon: Users, badge: '6' },
+  { id: 'students', label: 'Biriktirilgan Talabalar', icon: Users, badge: '3' },
   { id: 'reports', label: 'Kafedra Hisoboti', icon: BarChart3 },
   { id: 'settings', label: 'Sozlamalar', icon: Settings },
 ];
