@@ -2,24 +2,24 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  Building2, 
-  Users, 
-  FileText, 
-  Download, 
-  Upload, 
-  Settings, 
-  LogOut, 
-  Award, 
-  BookOpen, 
-  CheckCircle2, 
-  Clock, 
-  AlertCircle, 
-  ExternalLink, 
-  MessageSquare, 
-  LayoutDashboard, 
-  GraduationCap, 
-  Briefcase, 
+import {
+  Building2,
+  Users,
+  FileText,
+  Download,
+  Upload,
+  Settings,
+  LogOut,
+  Award,
+  BookOpen,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  ExternalLink,
+  MessageSquare,
+  LayoutDashboard,
+  GraduationCap,
+  Briefcase,
   Plus,
   Search,
   Check,
@@ -29,7 +29,10 @@ import {
   BarChart3,
   Image as ImageIcon,
   ChevronRight,
-  Filter
+  Filter,
+  Printer,
+  Send,
+  RotateCcw
 } from 'lucide-react';
 import CollapsibleSidebar, { NavItem } from '@/components/CollapsibleSidebar';
 
@@ -61,7 +64,15 @@ interface LogbookSubmission {
   mentorApproved: boolean;
   hasPhoto: boolean;
   photoTitle?: string;
+  academicStatus?: 'PENDING' | 'ACCEPTED' | 'REVISION';
   academicComment?: string;
+}
+
+interface MethodicDocument {
+  title: string;
+  ext: string;
+  date: string;
+  type: string;
 }
 
 const TEACHER_NAV_ITEMS: NavItem[] = [
@@ -90,15 +101,31 @@ export default function TeacherDashboard() {
   const [defenseScores, setDefenseScores] = useState<Record<string, number>>({
     'ST501824': 48.0,
     'ST501825': 46.5,
-    'ST501826': 49.0,
-    'ST501832': 42.0,
-    'ST501833': 44.0,
-    'ST501834': 0.0
+    'ST501826': 49.0
   });
 
   // Selected student for detail/logbook modal
   const [selectedStudentForModal, setSelectedStudentForModal] = useState<TeacherStudent | null>(null);
   const [academicCommentInput, setAcademicCommentInput] = useState('');
+
+  // Telegram messaging modal state
+  const [telegramModalStudent, setTelegramModalStudent] = useState<TeacherStudent | null>(null);
+  const [telegramMessageText, setTelegramMessageText] = useState('');
+
+  // ECTS Vedomost modal state
+  const [isVedomostModalOpen, setIsVedomostModalOpen] = useState(false);
+
+  // Methodic guide upload modal state
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [newDocTitle, setNewDocTitle] = useState('');
+  const [newDocType, setNewDocType] = useState('Malakaviy amaliyot');
+
+  // Documents list state
+  const [documentsList, setDocumentsList] = useState<MethodicDocument[]>([
+    { title: 'DI-2026: 4-kurs Malakaviy amaliyot dasturi va uslubiy ko\'rsatma', ext: 'PDF (2.4 MB)', date: '2026-09-15', type: 'Malakaviy amaliyot' },
+    { title: 'Amaliyot yakuniy hisoboti (Portfolio) rasmiylashtirish standarti', ext: 'DOCX (850 KB)', date: '2026-09-20', type: 'Bitiruv oldi' },
+    { title: 'Dasturiy injiniring kafedrasi 100 ballik baholash rubrikasi', ext: 'PDF (1.1 MB)', date: '2026-09-25', type: 'Malakaviy amaliyot' }
+  ]);
 
   // 1. Assigned Students list (Strictly 3 students per teacher limit)
   const [students, setStudents] = useState<TeacherStudent[]>([
@@ -146,7 +173,7 @@ export default function TeacherDashboard() {
     }
   ]);
 
-  // 2. Logbook Submissions
+  // 2. Logbook Submissions with 2-step decision workflow state
   const [logbooks, setLogbooks] = useState<LogbookSubmission[]>([
     {
       id: 'log_1',
@@ -160,7 +187,8 @@ export default function TeacherDashboard() {
       mentorFeedback: 'Ajoyib natija, kod toza yozilgan, arxitekturaviy talablarga javob beradi.',
       mentorApproved: true,
       hasPhoto: true,
-      photoTitle: 'websocket_load_test_results.png'
+      photoTitle: 'websocket_load_test_results.png',
+      academicStatus: 'PENDING'
     },
     {
       id: 'log_2',
@@ -174,7 +202,8 @@ export default function TeacherDashboard() {
       mentorFeedback: 'Interfeys juda chiroyli va qulay bo\'ldi. Tasdiqlandi.',
       mentorApproved: true,
       hasPhoto: true,
-      photoTitle: 'collapsible_sidebar_figma_preview.png'
+      photoTitle: 'collapsible_sidebar_figma_preview.png',
+      academicStatus: 'PENDING'
     },
     {
       id: 'log_3',
@@ -187,21 +216,8 @@ export default function TeacherDashboard() {
       skills: 'PostgreSQL, SQLAlchemy, Alembic Migrations',
       mentorFeedback: 'Indexlar to\'g\'ri qo\'yildi, so\'rovlar tezligi 3 barobar oshdi.',
       mentorApproved: true,
-      hasPhoto: false
-    },
-    {
-      id: 'log_4',
-      studentId: 'ST501832',
-      studentName: 'Akobir Rustamov',
-      group: 'DI-202-22',
-      company: 'Click MCHJ',
-      date: '2026-10-31',
-      tasks: 'To\'lov shlyuzlari API integratsiyasi va webhook payloadlarida xavfsizlik cheklarini yozish',
-      skills: 'HMAC Signature, REST API, Payment Security',
-      mentorFeedback: 'Xavfsizlik talablariga to\'liq javob beradi.',
-      mentorApproved: true,
-      hasPhoto: true,
-      photoTitle: 'payment_webhook_response.png'
+      hasPhoto: false,
+      academicStatus: 'PENDING'
     }
   ]);
 
@@ -220,7 +236,7 @@ export default function TeacherDashboard() {
     router.push('/login');
   };
 
-  const filteredStudents = students.filter(s => 
+  const filteredStudents = students.filter(s =>
     s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     s.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     s.group.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -228,7 +244,7 @@ export default function TeacherDashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col md:flex-row antialiased text-zinc-900">
+    <div className="min-h-screen bg-[#FAFAFA] flex flex-col md:flex-row antialiased text-zinc-950">
       {/* Left Collapsible Animated Sidebar */}
       <CollapsibleSidebar
         role="TEACHER"
@@ -263,7 +279,7 @@ export default function TeacherDashboard() {
               </span>
             </div>
 
-            <button 
+            <button
               onClick={handleLogout}
               className="flex items-center space-x-1.5 text-xs text-zinc-500 hover:text-rose-600 transition-colors bg-zinc-100 hover:bg-rose-50 px-3 py-1.5 rounded-xl border border-zinc-200/60"
             >
@@ -274,7 +290,7 @@ export default function TeacherDashboard() {
         </header>
 
         {/* Content Body */}
-        <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-6xl w-full mx-auto space-y-6">
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 w-full mx-auto space-y-6">
           <main className="flex-1 space-y-6">
             {notification && (
               <div className="bg-emerald-50 border border-emerald-200/80 rounded-2xl p-4 flex items-center space-x-3 text-emerald-800 text-xs shadow-sm">
@@ -287,28 +303,34 @@ export default function TeacherDashboard() {
             {activeTab === 'overview' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                  <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm">
-                    <span className="text-xs text-zinc-500">Menga Biriktirilgan Talabalar</span>
-                    <p className="text-2xl font-bold text-zinc-900 mt-2">{students.length} nafar</p>
-                    <p className="text-[11px] text-zinc-400 mt-1">Maksimal limit: 8 nafar</p>
+                  <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm space-y-3">
+                    <span className="text-xs text-zinc-500 font-medium">Menga Biriktirilgan Talabalar</span>
+                    <div className="flex items-baseline justify-between">
+                      <p className="text-2xl font-bold text-zinc-900">{students.length} / 3 nafar</p>
+                      <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">100% to'lgan</span>
+                    </div>
+                    {/* Animated gradient capacity progress bar */}
+                    <div className="w-full bg-zinc-100 h-2 rounded-full overflow-hidden">
+                      <div className="bg-gradient-to-r from-indigo-500 via-blue-500 to-emerald-500 h-full rounded-full transition-all duration-700 ease-out" style={{ width: '100%' }} />
+                    </div>
                   </div>
 
                   <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm">
-                    <span className="text-xs text-zinc-500">Tekshirilgan Kundaliklar</span>
+                    <span className="text-xs text-zinc-500 font-medium">Tekshirilgan Kundaliklar</span>
                     <p className="text-2xl font-bold text-emerald-600 mt-2">124 ta</p>
-                    <p className="text-[11px] text-emerald-700 mt-1">4 ta yangi ko'rib chiqishda</p>
+                    <p className="text-[11px] text-emerald-700 mt-1 font-medium">4 ta yangi ko'rib chiqishda</p>
                   </div>
 
                   <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm">
-                    <span className="text-xs text-zinc-500">Amaliyot Korxonalari</span>
+                    <span className="text-xs text-zinc-500 font-medium">Amaliyot Korxonalari</span>
                     <p className="text-2xl font-bold text-zinc-900 mt-2">3 ta</p>
                     <p className="text-[11px] text-zinc-400 mt-1">Uzum, IT Park, Click</p>
                   </div>
 
                   <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm">
-                    <span className="text-xs text-zinc-500">O'rtacha Kafedra Bali</span>
+                    <span className="text-xs text-zinc-500 font-medium">O'rtacha Kafedra Bali</span>
                     <p className="text-2xl font-bold text-purple-600 mt-2">46.5 / 50</p>
-                    <p className="text-[11px] text-purple-700 mt-1">Yuqori akademik natija</p>
+                    <p className="text-[11px] text-purple-700 mt-1 font-medium">Yuqori akademik natija</p>
                   </div>
                 </div>
 
@@ -325,7 +347,7 @@ export default function TeacherDashboard() {
                       <ChevronRight className="w-4 h-4 text-zinc-400 group-hover:text-zinc-900 transition-colors" />
                     </div>
                     <h4 className="text-xs font-bold text-zinc-900">Kundaliklar Taftishi</h4>
-                    <p className="text-[11px] text-zinc-400 mt-0.5">Yangi foto-hisobotlar va kunlik topshiriqlarni tekshiring</p>
+                    <p className="text-[11px] text-zinc-400 mt-0.5">Yangi foto-hisobotlar va 2 bosqichli qarorlarni qabul qilish</p>
                   </button>
 
                   <button
@@ -339,7 +361,7 @@ export default function TeacherDashboard() {
                       <ChevronRight className="w-4 h-4 text-zinc-400 group-hover:text-zinc-900 transition-colors" />
                     </div>
                     <h4 className="text-xs font-bold text-zinc-900">100 Ballik ECTS Baholash</h4>
-                    <p className="text-[11px] text-zinc-400 mt-0.5">Mentor (50) + OTM (50) rubrikasini to'ldirish</p>
+                    <p className="text-[11px] text-zinc-400 mt-0.5">Mentor (50) + OTM (50) rubrikasi va rasmiy Vedomost PDF</p>
                   </button>
 
                   <button
@@ -353,7 +375,7 @@ export default function TeacherDashboard() {
                       <ChevronRight className="w-4 h-4 text-zinc-400 group-hover:text-zinc-900 transition-colors" />
                     </div>
                     <h4 className="text-xs font-bold text-zinc-900">Biriktirilgan Talabalar</h4>
-                    <p className="text-[11px] text-zinc-400 mt-0.5">Davomat va korxona shartnomalarini ko'rish</p>
+                    <p className="text-[11px] text-zinc-400 mt-0.5">Davomat, shartnomalar va Telegram orqali xabar yuborish</p>
                   </button>
                 </div>
 
@@ -373,70 +395,113 @@ export default function TeacherDashboard() {
                 <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 gap-3">
                     <div>
-                      <h3 className="text-sm font-bold text-zinc-900">Talabalar Kundaliklari Taftishi</h3>
-                      <p className="text-xs text-zinc-500">Talabalar bajargan ishlar, amaliy ko'nikmalar, skrinshot/foto-hisobotlar va mentor tasdiqlari</p>
+                      <h3 className="text-sm font-bold text-zinc-900">Talabalar Kundaliklari Taftishi & 2 Bosqichli Qaror</h3>
+                      <p className="text-xs text-zinc-500">Talabalar bajargan ishlar, amaliy ko'nikmalar, skrinshot/foto-hisobotlar va rasmiy qarorlar</p>
                     </div>
                     <span className="text-xs text-zinc-500 font-medium">Jami hisobotlar: {logbooks.length} ta</span>
                   </div>
 
                   <div className="space-y-4 pt-2">
-                    {logbooks.map((log) => (
-                      <div key={log.id} className="p-4 rounded-xl border border-zinc-200/80 bg-zinc-50/40 space-y-3">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-xs font-bold text-zinc-900">{log.studentName}</span>
-                            <span className="text-[11px] text-zinc-400 font-mono">({log.group})</span>
-                            <span className="text-[11px] text-zinc-500 font-medium">• {log.company}</span>
-                          </div>
-                          <span className="text-[11px] text-zinc-500 font-mono">Sana: {log.date}</span>
-                        </div>
+                    {logbooks.map((log) => {
+                      const statusBadge = log.academicStatus === 'ACCEPTED' ? (
+                        <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
+                          🟢 Tasdiqlandi
+                        </span>
+                      ) : log.academicStatus === 'REVISION' ? (
+                        <span className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200 text-[10px] font-bold">
+                          🔴 Qayta ishlashga yuborildi
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-bold">
+                          ⏳ Tekshiruv kutilmoqda
+                        </span>
+                      );
 
-                        <div className="space-y-1">
-                          <p className="text-xs text-zinc-800">
-                            <strong>Bajarilgan ish:</strong> {log.tasks}
-                          </p>
-                          <p className="text-[11px] text-zinc-500">
-                            <strong>Egallangan ko'nikmalar:</strong> {log.skills}
-                          </p>
-                        </div>
-
-                        {/* Mentor Feedback & Verification Badge */}
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-emerald-50/70 border border-emerald-100 gap-2">
-                          <div className="flex items-start space-x-2">
-                            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                            <div className="text-[11px]">
-                              <span className="font-bold text-emerald-900">Mentor Tasdig'i:</span>
-                              <span className="text-emerald-800 ml-1">"{log.mentorFeedback}"</span>
+                      return (
+                        <div key={log.id} className="p-4 rounded-xl border border-zinc-200/80 bg-zinc-50/40 space-y-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-xs font-bold text-zinc-900">{log.studentName}</span>
+                              <span className="text-[11px] text-zinc-400 font-mono">({log.group})</span>
+                              <span className="text-[11px] text-zinc-500 font-medium">• {log.company}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              {statusBadge}
+                              <span className="text-[11px] text-zinc-500 font-mono">Sana: {log.date}</span>
                             </div>
                           </div>
 
-                          {log.hasPhoto && (
-                            <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-white border border-emerald-200 text-[10px] font-medium text-emerald-800">
-                              <ImageIcon className="w-3.5 h-3.5 text-emerald-600" />
-                              <span>{log.photoTitle}</span>
-                            </div>
-                          )}
-                        </div>
+                          <div className="space-y-1">
+                            <p className="text-xs text-zinc-800">
+                              <strong>Bajarilgan ish:</strong> {log.tasks}
+                            </p>
+                            <p className="text-[11px] text-zinc-500">
+                              <strong>Egallangan ko'nikmalar:</strong> {log.skills}
+                            </p>
+                          </div>
 
-                        {/* Teacher's Academic Recommendation Field */}
-                        <div className="flex items-center space-x-2 pt-1">
-                          <input 
-                            type="text" 
-                            placeholder="Ushbu kundalikka ilmiy-metodik tavsiya yoki izohingizni yozing..."
-                            className="flex-1 text-xs p-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
-                          />
-                          <button 
-                            onClick={() => {
-                              setNotification(`${log.studentName} ning kundaligiga ilmiy tavsiya yuborildi!`);
-                              setTimeout(() => setNotification(null), 3000);
-                            }}
-                            className="px-3.5 py-2.5 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-all shadow-xs"
-                          >
-                            Izoh Qoldirish
-                          </button>
+                          {/* Mentor Feedback & Verification Badge */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-emerald-50/70 border border-emerald-100 gap-2">
+                            <div className="flex items-start space-x-2">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                              <div className="text-[11px]">
+                                <span className="font-bold text-emerald-900">Mentor Tasdig'i:</span>
+                                <span className="text-emerald-800 ml-1">"{log.mentorFeedback}"</span>
+                              </div>
+                            </div>
+
+                            {log.hasPhoto && (
+                              <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-white border border-emerald-200 text-[10px] font-medium text-emerald-800">
+                                <ImageIcon className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>{log.photoTitle}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* 2-Step Decision Workflow Buttons */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-2 gap-3 border-t border-zinc-200/60">
+                            <input
+                              type="text"
+                              placeholder="O'qituvchining akademik izohi yoki kamchiliklar bo'yicha ko'rsatmasi..."
+                              value={log.academicComment || ''}
+                              onChange={(e) => {
+                                const updated = logbooks.map(l => l.id === log.id ? { ...l, academicComment: e.target.value } : l);
+                                setLogbooks(updated);
+                              }}
+                              className="flex-1 text-xs p-2 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+                            />
+
+                            <div className="flex items-center space-x-2 shrink-0">
+                              <button
+                                onClick={() => {
+                                  const updated = logbooks.map(l => l.id === log.id ? { ...l, academicStatus: 'ACCEPTED' as const } : l);
+                                  setLogbooks(updated);
+                                  setNotification(`${log.studentName} ning kundaligi muvaffaqiyatli qabul qilindi!`);
+                                  setTimeout(() => setNotification(null), 3000);
+                                }}
+                                className="inline-flex items-center space-x-1 px-3.5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-medium hover:bg-emerald-700 transition-all shadow-xs"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                                <span>Qabul Qilish</span>
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  const updated = logbooks.map(l => l.id === log.id ? { ...l, academicStatus: 'REVISION' as const } : l);
+                                  setLogbooks(updated);
+                                  setNotification(`${log.studentName} ning kundaligi qayta ishlashga yuborildi!`);
+                                  setTimeout(() => setNotification(null), 3000);
+                                }}
+                                className="inline-flex items-center space-x-1 px-3.5 py-2 bg-rose-600 text-white rounded-xl text-xs font-medium hover:bg-rose-700 transition-all shadow-xs"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                <span>Qayta Ishlashga</span>
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -446,9 +511,19 @@ export default function TeacherDashboard() {
             {activeTab === 'grading-100' && (
               <div className="space-y-6">
                 <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm space-y-4">
-                  <div>
-                    <h3 className="text-sm font-bold text-zinc-900">100 Ballik ECTS Baholash Markazi</h3>
-                    <p className="text-xs text-zinc-500">Korxona mentori bali (0-50 ball) va Kafedra himoya bali (0-50 ball) yig'indisi asosida avtomatik ECTS hisoblanadi</p>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 gap-3 border-b border-zinc-100">
+                    <div>
+                      <h3 className="text-sm font-bold text-zinc-900">100 Ballik ECTS Baholash Markazi</h3>
+                      <p className="text-xs text-zinc-500">Korxona mentori bali (0-50 ball) va Kafedra himoya bali (0-50 ball) yig'indisi asosida avtomatik ECTS hisoblanadi</p>
+                    </div>
+
+                    <button
+                      onClick={() => setIsVedomostModalOpen(true)}
+                      className="inline-flex items-center space-x-2 px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-all shadow-sm"
+                    >
+                      <Printer className="w-4 h-4" />
+                      <span>Rasmiy Kafedra ECTS Vedomostini PDF Yuklash</span>
+                    </button>
                   </div>
 
                   <div className="space-y-4 pt-2">
@@ -495,7 +570,7 @@ export default function TeacherDashboard() {
                                 <span>OTM Himoya Bali (0 - 50):</span>
                               </span>
                               <div className="flex items-center space-x-2 mt-1">
-                                <input 
+                                <input
                                   type="number"
                                   min="0"
                                   max="50"
@@ -514,7 +589,7 @@ export default function TeacherDashboard() {
                             {/* Report File Download */}
                             <div className="p-3 rounded-xl bg-white border border-zinc-200 flex flex-col justify-between">
                               <span className="text-[11px] text-zinc-500">Talaba Yakuniy Hisoboti:</span>
-                              <button 
+                              <button
                                 onClick={() => {
                                   setNotification(`${s.reportFile} muvaffaqiyatli yuklab olindi!`);
                                   setTimeout(() => setNotification(null), 3000);
@@ -528,7 +603,7 @@ export default function TeacherDashboard() {
                           </div>
 
                           <div className="flex justify-end pt-1">
-                            <button 
+                            <button
                               onClick={() => {
                                 setNotification(`${s.name} uchun yakuniy ${totalScore.toFixed(1)} ball va "${ects.grade}" ECTS bahosi tasdiqlandi va dekanatga yuborildi!`);
                                 setTimeout(() => setNotification(null), 3500);
@@ -556,16 +631,16 @@ export default function TeacherDashboard() {
                       <p className="text-xs text-zinc-500">Dekanat tomonidan sizga ilmiy rahbar sifatida biriktirilgan talabalar ro'yxati</p>
                     </div>
 
-                    <span className="text-xs font-semibold px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200/80 rounded-xl">
-                      Yuklama: {students.length} / 8 nafar
+                    <span className="text-xs font-semibold px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200/80 rounded-xl">
+                      Yuklama: {students.length} / 3 nafar (100% to'lgan)
                     </span>
                   </div>
 
                   {/* Search Input */}
                   <div className="relative w-full sm:w-80 pt-1">
                     <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-3.5" />
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder="Talaba ismi, ID yoki guruhi bo'yicha..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
@@ -584,28 +659,46 @@ export default function TeacherDashboard() {
                           <th className="py-2.5 px-3 font-medium">Amaliyot Korxonasi</th>
                           <th className="py-2.5 px-3 font-medium">Mentor F.I.SH</th>
                           <th className="py-2.5 px-3 font-medium">Davomat</th>
-                          <th className="py-2.5 px-3 font-medium text-right">Amal</th>
+                          <th className="py-2.5 px-3 font-medium text-right">Amallar</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-zinc-100">
                         {filteredStudents.map((s) => (
-                          <tr 
-                            key={s.id} 
-                            onClick={() => setSelectedStudentForModal(s)}
-                            className="hover:bg-zinc-50 cursor-pointer transition-colors group"
+                          <tr
+                            key={s.id}
+                            className="hover:bg-zinc-50 transition-colors group"
                           >
-                            <td className="py-3 px-3 font-mono font-bold text-violet-700">{s.id}</td>
-                            <td className="py-3 px-3 font-semibold text-zinc-900 group-hover:text-blue-600 transition-colors">
+                            <td
+                              onClick={() => setSelectedStudentForModal(s)}
+                              className="py-3 px-3 font-mono font-bold text-violet-700 cursor-pointer"
+                            >
+                              {s.id}
+                            </td>
+                            <td
+                              onClick={() => setSelectedStudentForModal(s)}
+                              className="py-3 px-3 font-semibold text-zinc-900 group-hover:text-blue-600 transition-colors cursor-pointer"
+                            >
                               {s.name}
                             </td>
                             <td className="py-3 px-3 font-mono text-zinc-500">{s.group}</td>
                             <td className="py-3 px-3 text-zinc-700">{s.company}</td>
                             <td className="py-3 px-3 text-zinc-700">{s.mentor}</td>
                             <td className="py-3 px-3 font-semibold text-emerald-700">{s.attendanceRate} ({s.daysCompleted})</td>
-                            <td className="py-3 px-3 text-right">
-                              <span className="text-[11px] text-zinc-400 group-hover:text-zinc-900 underline font-medium">
-                                Taftish
-                              </span>
+                            <td className="py-3 px-3 text-right space-x-2">
+                              <button
+                                onClick={() => setTelegramModalStudent(s)}
+                                className="inline-flex items-center space-x-1 px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-[11px] font-medium transition-colors"
+                                title="Telegram orqali xabar yuborish"
+                              >
+                                <MessageSquare className="w-3.5 h-3.5" />
+                                <span>Telegram</span>
+                              </button>
+                              <button
+                                onClick={() => setSelectedStudentForModal(s)}
+                                className="inline-flex items-center space-x-1 px-2.5 py-1 bg-zinc-900 text-white hover:bg-zinc-800 rounded-lg text-[11px] font-medium transition-colors"
+                              >
+                                <span>Taftish</span>
+                              </button>
                             </td>
                           </tr>
                         ))}
@@ -626,30 +719,41 @@ export default function TeacherDashboard() {
                       <p className="text-xs text-zinc-500">Uslubiy ko'rsatmalar, amaliyot dasturlari va yakuniy kafedra baholari eksporti</p>
                     </div>
 
-                    <button 
-                      onClick={() => {
-                        setNotification('Kafedra hisoboti Excel formati shakllantirildi va yuklab olindi!');
-                        setTimeout(() => setNotification(null), 3000);
-                      }}
-                      className="inline-flex items-center space-x-1.5 px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 shadow-sm"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Kafedra Yakuniy Hisobotini Yuklash (XLSX)</span>
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => setIsUploadModalOpen(true)}
+                        className="inline-flex items-center space-x-1.5 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-medium hover:bg-indigo-700 shadow-sm transition-all"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>+ Yangi Uslubiy Qo'llanma Yuklash</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setNotification('Kafedra hisoboti Excel formati shakllantirildi va yuklab olindi!');
+                          setTimeout(() => setNotification(null), 3000);
+                        }}
+                        className="inline-flex items-center space-x-1.5 px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 shadow-sm"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Hisobotni Yuklash (XLSX)</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="space-y-3">
-                    {[
-                      { title: 'DI-2026: 4-kurs Malakaviy amaliyot dasturi va uslubiy ko\'rsatma', ext: 'PDF (2.4 MB)', date: '2026-09-15' },
-                      { title: 'Amaliyot yakuniy hisoboti (Portfolio) rasmiylashtirish standarti', ext: 'DOCX (850 KB)', date: '2026-09-20' },
-                      { title: 'Dasturiy injiniring kafedrasi 100 ballik baholash rubrikasi', ext: 'PDF (1.1 MB)', date: '2026-09-25' }
-                    ].map((doc, idx) => (
+                    {documentsList.map((doc, idx) => (
                       <div key={idx} className="flex items-center justify-between p-4 rounded-xl border border-zinc-200/60 bg-zinc-50/40">
                         <div>
-                          <h4 className="text-xs font-bold text-zinc-900">{doc.title}</h4>
+                          <div className="flex items-center space-x-2">
+                            <h4 className="text-xs font-bold text-zinc-900">{doc.title}</h4>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                              {doc.type}
+                            </span>
+                          </div>
                           <p className="text-[11px] text-zinc-400 font-mono mt-0.5">{doc.ext} • {doc.date}</p>
                         </div>
-                        <button 
+                        <button
                           onClick={() => {
                             setNotification(`${doc.title} yuklab olindi!`);
                             setTimeout(() => setNotification(null), 2500);
@@ -677,8 +781,8 @@ export default function TeacherDashboard() {
                 <div className="space-y-4 max-w-md">
                   <div>
                     <label className="block text-xs font-medium text-zinc-700 mb-1">F.I.SH</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       defaultValue="Dotsent Jamshid Karimov"
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-900"
                     />
@@ -686,8 +790,8 @@ export default function TeacherDashboard() {
 
                   <div>
                     <label className="block text-xs font-medium text-zinc-700 mb-1">Telefon Raqami</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       defaultValue="+998 90 333 33 33"
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-900"
                     />
@@ -695,8 +799,8 @@ export default function TeacherDashboard() {
 
                   <div>
                     <label className="block text-xs font-medium text-zinc-700 mb-1">Konsultatsiya va Qabul Soatlari</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       defaultValue="Chorshanba va Juma 14:00 - 16:00 (304-xona)"
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-900"
                     />
@@ -713,7 +817,7 @@ export default function TeacherDashboard() {
                     </p>
                   </div>
 
-                  <button 
+                  <button
                     onClick={() => {
                       setNotification('O\'qituvchi sozlamalari saqlandi!');
                       setTimeout(() => setNotification(null), 3000);
@@ -732,100 +836,361 @@ export default function TeacherDashboard() {
       {/* INTERACTIVE DETAIL MODAL: TALABA KUNDALIGI VA TAFTISH KARTASI */}
       {selectedStudentForModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 space-y-5 animate-in fade-in zoom-in-95 duration-200">
-            {/* Modal Header */}
-            <div className="flex items-start justify-between pb-3 border-b border-zinc-100">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-2xl bg-violet-50 text-violet-700 flex items-center justify-center shrink-0">
-                  <GraduationCap className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <h3 className="text-sm font-bold text-zinc-900">{selectedStudentForModal.name}</h3>
-                    <span className="font-mono text-[10px] font-bold text-violet-700 bg-violet-50 px-2 py-0.5 rounded border border-violet-200">
-                      {selectedStudentForModal.id}
-                    </span>
+          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* Gradient Top Line */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-blue-500 to-emerald-500" />
+
+            <div className="p-6 space-y-5">
+              {/* Modal Header */}
+              <div className="flex items-start justify-between pb-3 border-b border-zinc-100">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-2xl bg-violet-50 text-violet-700 flex items-center justify-center shrink-0">
+                    <GraduationCap className="w-5 h-5" />
                   </div>
-                  <p className="text-[11px] text-zinc-400 mt-0.5">
-                    Guruhi: <span className="font-mono text-zinc-700">{selectedStudentForModal.group}</span> • Shartnoma: <span className="font-mono text-emerald-700">{selectedStudentForModal.contractNo}</span>
-                  </p>
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <h3 className="text-sm font-bold text-zinc-900">{selectedStudentForModal.name}</h3>
+                      <span className="font-mono text-[10px] font-bold text-violet-700 bg-violet-50 px-2 py-0.5 rounded border border-violet-200">
+                        {selectedStudentForModal.id}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-zinc-400 mt-0.5">
+                      Guruhi: <span className="font-mono text-zinc-700">{selectedStudentForModal.group}</span> • Shartnoma: <span className="font-mono text-emerald-700">{selectedStudentForModal.contractNo}</span>
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <button 
-                onClick={() => setSelectedStudentForModal(null)}
-                className="p-1 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Quick Status Cards */}
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50">
-                <span className="text-[10px] text-zinc-400 block">Amaliyot Korxonasi:</span>
-                <p className="font-semibold text-zinc-900 mt-0.5">{selectedStudentForModal.company}</p>
-                <p className="text-[11px] text-zinc-500">Mentori: {selectedStudentForModal.mentor}</p>
-              </div>
-
-              <div className="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50">
-                <span className="text-[10px] text-zinc-400 block">Davomat Natijasi:</span>
-                <p className="font-bold text-emerald-600 mt-0.5">{selectedStudentForModal.attendanceRate}</p>
-                <p className="text-[11px] text-zinc-500">{selectedStudentForModal.daysCompleted}</p>
-              </div>
-
-              <div className="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50">
-                <span className="text-[10px] text-zinc-400 block">Mentor Bali (0-50):</span>
-                <p className="font-bold text-zinc-900 mt-0.5">{selectedStudentForModal.mentorScore} / 50 ball</p>
-              </div>
-
-              <div className="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50">
-                <span className="text-[10px] text-zinc-400 block">OTM Himoya Bali:</span>
-                <p className="font-bold text-blue-600 mt-0.5">{defenseScores[selectedStudentForModal.id] || 0} / 50 ball</p>
-              </div>
-            </div>
-
-            {/* Academic Comment Input */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-zinc-700">Ilmiy Rahbar Taqrizi / Izohi:</label>
-              <textarea 
-                rows={3}
-                placeholder="Talabaning amaliyot faoliyati bo'yicha ilmiy xulosangizni yozing..."
-                value={academicCommentInput}
-                onChange={(e) => setAcademicCommentInput(e.target.value)}
-                className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 bg-white placeholder-zinc-400 text-zinc-900 focus:outline-none focus:border-zinc-900 resize-none"
-              />
-            </div>
-
-            {/* Footer Buttons */}
-            <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
-              <button
-                onClick={() => {
-                  setNotification(`${selectedStudentForModal.reportFile} yuklab olindi!`);
-                  setTimeout(() => setNotification(null), 2500);
-                }}
-                className="inline-flex items-center space-x-1.5 text-xs text-zinc-700 hover:text-zinc-900 font-medium"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Hisobot faylini ko'rish</span>
-              </button>
-
-              <div className="flex space-x-2">
                 <button
                   onClick={() => setSelectedStudentForModal(null)}
+                  className="p-1 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 hover:rotate-90 transition-transform duration-200"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Quick Status Cards */}
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50">
+                  <span className="text-[10px] text-zinc-400 block">Amaliyot Korxonasi:</span>
+                  <p className="font-semibold text-zinc-900 mt-0.5">{selectedStudentForModal.company}</p>
+                  <p className="text-[11px] text-zinc-500">Mentori: {selectedStudentForModal.mentor}</p>
+                </div>
+
+                <div className="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50">
+                  <span className="text-[10px] text-zinc-400 block">Davomat Natijasi:</span>
+                  <p className="font-bold text-emerald-600 mt-0.5">{selectedStudentForModal.attendanceRate}</p>
+                  <p className="text-[11px] text-zinc-500">{selectedStudentForModal.daysCompleted}</p>
+                </div>
+
+                <div className="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50">
+                  <span className="text-[10px] text-zinc-400 block">Mentor Bali (0-50):</span>
+                  <p className="font-bold text-zinc-900 mt-0.5">{selectedStudentForModal.mentorScore} / 50 ball</p>
+                </div>
+
+                <div className="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50">
+                  <span className="text-[10px] text-zinc-400 block">OTM Himoya Bali:</span>
+                  <p className="font-bold text-blue-600 mt-0.5">{defenseScores[selectedStudentForModal.id] || 0} / 50 ball</p>
+                </div>
+              </div>
+
+              {/* Academic Comment Input */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-zinc-700">Ilmiy Rahbar Taqrizi / Izohi:</label>
+                <textarea
+                  rows={3}
+                  placeholder="Talabaning amaliyot faoliyati bo'yicha ilmiy xulosangizni yozing..."
+                  value={academicCommentInput}
+                  onChange={(e) => setAcademicCommentInput(e.target.value)}
+                  className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 bg-white placeholder-zinc-400 text-zinc-900 focus:outline-none focus:border-zinc-900 resize-none"
+                />
+              </div>
+
+              {/* Footer Buttons */}
+              <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
+                <button
+                  onClick={() => {
+                    setNotification(`${selectedStudentForModal.reportFile} yuklab olindi!`);
+                    setTimeout(() => setNotification(null), 2500);
+                  }}
+                  className="inline-flex items-center space-x-1.5 text-xs text-zinc-700 hover:text-zinc-900 font-medium"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Hisobot faylini ko'rish</span>
+                </button>
+
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setSelectedStudentForModal(null)}
+                    className="px-3.5 py-2 rounded-xl text-xs text-zinc-600 hover:bg-zinc-100"
+                  >
+                    Yopish
+                  </button>
+                  <button
+                    onClick={() => {
+                      setNotification(`${selectedStudentForModal.name} ning taqrizi saqlandi!`);
+                      setSelectedStudentForModal(null);
+                      setAcademicCommentInput('');
+                      setTimeout(() => setNotification(null), 3000);
+                    }}
+                    className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 shadow-sm"
+                  >
+                    Taqrizni Saqlash
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TELEGRAM MESSAGING MODAL (@tiupm_bot) */}
+      {telegramModalStudent && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-600" />
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <MessageSquare className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-zinc-900">Telegram Xabar Jo'natish (@tiupm_bot)</h3>
+                    <p className="text-[11px] text-zinc-500">Qabul qiluvchi: <span className="font-semibold text-zinc-900">{telegramModalStudent.name}</span> ({telegramModalStudent.group})</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setTelegramModalStudent(null)}
+                  className="p-1 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 hover:rotate-90 transition-transform duration-200"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-zinc-700">Xabar matni:</label>
+                <textarea
+                  rows={4}
+                  placeholder="Masalan: Hurmatli talaba, yakuniy amaliyot hisobotingizni 10-noyabrgacha yuklashingiz shart."
+                  value={telegramMessageText}
+                  onChange={(e) => setTelegramMessageText(e.target.value)}
+                  className="w-full text-xs p-3 rounded-xl border border-zinc-200 bg-white placeholder-zinc-400 text-zinc-900 focus:outline-none focus:border-zinc-900 resize-none"
+                />
+                <p className="text-[10px] text-zinc-400">Ushbu bildirishnoma @tiupm_bot orqali talabaning shaxsiy Telegram akkauntiga darhol yuboriladi.</p>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-2 border-t border-zinc-100">
+                <button
+                  onClick={() => setTelegramModalStudent(null)}
                   className="px-3.5 py-2 rounded-xl text-xs text-zinc-600 hover:bg-zinc-100"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  onClick={() => {
+                    setNotification(`${telegramModalStudent.name} ga @tiupm_bot orqali xabar muvaffaqiyatli jo'natildi!`);
+                    setTelegramModalStudent(null);
+                    setTelegramMessageText('');
+                    setTimeout(() => setNotification(null), 3000);
+                  }}
+                  className="inline-flex items-center space-x-1.5 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-medium hover:bg-blue-700 shadow-sm transition-all"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Xabarni Jo'natish</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RASMIY KAFEDRA ECTS VEDOMOST PDF MODAL */}
+      {isVedomostModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-blue-600 to-emerald-600" />
+            <div className="p-6 space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center">
+                    <Award className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-zinc-900">Tashkent International University</h3>
+                    <p className="text-xs text-zinc-500 font-medium">Rasmiy Kafedra ECTS Baholash Vedomosti (2025/2026)</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsVedomostModalOpen(false)}
+                  className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 hover:rotate-90 transition-transform duration-200"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Vedomost Printable Preview Area */}
+              <div className="p-4 rounded-xl border border-zinc-200 bg-zinc-50/70 space-y-4 font-mono text-xs text-zinc-800">
+                <div className="text-center pb-2 border-b border-zinc-200 space-y-1">
+                  <p className="font-bold text-sm text-zinc-900">O'ZBEKISTON RESPUBLIKASI OLIY TA'LIM, FAN VA INNOVATSIYALAR VAZIRLIGI</p>
+                  <p className="font-bold text-indigo-700">TASHKENT INTERNATIONAL UNIVERSITY</p>
+                  <p className="text-[11px] text-zinc-600">Dasturiy injiniring kafedrasi • 4-kurs Malakaviy Ishlab Chiqarish Amaliyoti</p>
+                </div>
+
+                <div className="grid grid-cols-2 text-[11px] text-zinc-700 pb-2">
+                  <p><strong>O'quv yili:</strong> 2025/2026 (Kuzgi semestr)</p>
+                  <p><strong>Fan / Modul:</strong> Malakaviy Amaliyot</p>
+                  <p><strong>Ilmiy rahbar:</strong> Dotsent J. Karimov</p>
+                  <p><strong>Guruh:</strong> DI-202-22</p>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[11px] text-left border-collapse">
+                    <thead>
+                      <tr className="bg-zinc-200 text-zinc-900">
+                        <th className="p-2 border border-zinc-300">ID</th>
+                        <th className="p-2 border border-zinc-300">F.I.SH</th>
+                        <th className="p-2 border border-zinc-300 text-center">Mentor (50)</th>
+                        <th className="p-2 border border-zinc-300 text-center">Himoya (50)</th>
+                        <th className="p-2 border border-zinc-300 text-center">Jami (100)</th>
+                        <th className="p-2 border border-zinc-300 text-center">ECTS</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {students.map((s) => {
+                        const tScore = defenseScores[s.id] || 0;
+                        const total = s.mentorScore + tScore;
+                        const ects = calculateGradeLetter(total);
+                        return (
+                          <tr key={s.id} className="bg-white">
+                            <td className="p-2 border border-zinc-300 font-bold">{s.id}</td>
+                            <td className="p-2 border border-zinc-300 font-semibold">{s.name}</td>
+                            <td className="p-2 border border-zinc-350 text-center">{s.mentorScore}</td>
+                            <td className="p-2 border border-zinc-300 text-center">{tScore}</td>
+                            <td className="p-2 border border-zinc-300 text-center font-bold">{total.toFixed(1)}</td>
+                            <td className="p-2 border border-zinc-300 text-center font-bold text-emerald-700">{ects.grade} ({ects.label})</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="pt-4 flex justify-between items-end text-[11px] text-zinc-700 border-t border-zinc-200">
+                  <div>
+                    <p>Kafedra mudiri: ____________ (imzo)</p>
+                    <p className="mt-1">Ilmiy rahbar: ____________ (imzo)</p>
+                  </div>
+                  <div className="text-right">
+                    <p>Sana: 2026-11-05</p>
+                    <p className="text-emerald-700 font-bold mt-1">M.O'. (University Seal)</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-2 border-t border-zinc-100">
+                <button
+                  onClick={() => setIsVedomostModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs text-zinc-600 hover:bg-zinc-100"
                 >
                   Yopish
                 </button>
                 <button
                   onClick={() => {
-                    setNotification(`${selectedStudentForModal.name} ning taqrizi saqlandi!`);
-                    setSelectedStudentForModal(null);
-                    setAcademicCommentInput('');
+                    setNotification('Rasmiy Kafedra ECTS Vedomosti PDF formati yuklab olindi!');
+                    setIsVedomostModalOpen(false);
                     setTimeout(() => setNotification(null), 3000);
                   }}
-                  className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 shadow-sm"
+                  className="inline-flex items-center space-x-1.5 px-5 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 shadow-sm transition-all"
                 >
-                  Taqrizni Saqlash
+                  <Download className="w-4 h-4" />
+                  <span>PDF Sifatida Yuklab Olish</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* METHODIC GUIDE & SYLLABUS UPLOAD MODAL */}
+      {isUploadModalOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                    <Upload className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-xs font-bold text-zinc-900">Yangi Uslubiy Qo'llanma / Sillabus Yuklash</h3>
+                </div>
+                <button
+                  onClick={() => setIsUploadModalOpen(false)}
+                  className="p-1 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 hover:rotate-90 transition-transform duration-200"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div>
+                  <label className="block font-medium text-zinc-700 mb-1">Hujjat Nomi:</label>
+                  <input
+                    type="text"
+                    placeholder="Masalan: Axborot xavfsizligi fanidan amaliyot qo'llanmasi"
+                    value={newDocTitle}
+                    onChange={(e) => setNewDocTitle(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-medium text-zinc-700 mb-1">Amaliyot Turi:</label>
+                  <select
+                    value={newDocType}
+                    onChange={(e) => setNewDocType(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+                  >
+                    <option value="Malakaviy amaliyot">Malakaviy amaliyot</option>
+                    <option value="Bitiruv oldi">Bitiruv oldi amaliyoti</option>
+                    <option value="Kafedra uslubiyoti">Kafedra uslubiyoti</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-medium text-zinc-700 mb-1">Faylni Tanlang (.pdf, .docx):</label>
+                  <input
+                    type="file"
+                    accept=".pdf,.docx"
+                    className="w-full text-xs text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-zinc-900 file:text-white hover:file:bg-zinc-800"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-2 border-t border-zinc-100">
+                <button
+                  onClick={() => setIsUploadModalOpen(false)}
+                  className="px-3.5 py-2 rounded-xl text-xs text-zinc-600 hover:bg-zinc-100"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  onClick={() => {
+                    if (!newDocTitle.trim()) {
+                      alert('Iltimos, hujjat nomini kiriting!');
+                      return;
+                    }
+                    setDocumentsList([
+                      { title: newDocTitle, ext: 'PDF (1.8 MB)', date: '2026-11-05', type: newDocType },
+                      ...documentsList
+                    ]);
+                    setNotification(`"${newDocTitle}" muvaffaqiyatli yuklandi va kafedra ro'yxatiga qo'shildi!`);
+                    setIsUploadModalOpen(false);
+                    setNewDocTitle('');
+                    setTimeout(() => setNotification(null), 3000);
+                  }}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-medium hover:bg-indigo-700 shadow-sm transition-all"
+                >
+                  Yuklash va Saqlash
                 </button>
               </div>
             </div>
