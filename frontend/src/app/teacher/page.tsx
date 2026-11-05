@@ -32,9 +32,23 @@ import {
   Filter,
   Printer,
   Send,
-  RotateCcw
+  RotateCcw,
+  Calendar
 } from 'lucide-react';
 import CollapsibleSidebar, { NavItem } from '@/components/CollapsibleSidebar';
+
+interface PracticeDay {
+  dayNumber: number;
+  date: string;
+  weekday: string;
+  isWeekend: boolean;
+  status: 'FULL' | 'PARTIAL' | 'EMPTY' | 'WEEKEND' | 'FUTURE';
+  taskDescription?: string;
+  skills?: string[];
+  photoTitle?: string;
+  mentorScore?: number;
+  mentorFeedback?: string;
+}
 
 interface TeacherStudent {
   id: string;
@@ -49,6 +63,7 @@ interface TeacherStudent {
   contractNo: string;
   reportFile: string;
   status: 'FAOL' | 'HIMOYA_KUTILMOQDA' | 'BAHOLANDI';
+  practiceDays: PracticeDay[];
 }
 
 interface LogbookSubmission {
@@ -91,6 +106,66 @@ const TEACHER_NAV_ITEMS: NavItem[] = [
   { id: 'settings', label: 'Sozlamalar', icon: Settings },
 ];
 
+// Helper to generate 30 days practice heatmap data
+const generateSamplePracticeDays = (): PracticeDay[] => {
+  const days: PracticeDay[] = [];
+  const startTimestamp = new Date('2026-10-01').getTime();
+  const weekdays = ['Yakshanba', 'Dushanba', 'Seshanba', 'Chorshanba', 'Payshanba', 'Juma', 'Shanba'];
+
+  for (let i = 1; i <= 30; i++) {
+    const d = new Date(startTimestamp + (i - 1) * 24 * 60 * 60 * 1000);
+    const dayOfWeek = d.getDay(); // 0 is Sunday, 6 is Saturday
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const weekdayName = weekdays[dayOfWeek];
+    const dateStr = d.toISOString().split('T')[0];
+
+    let status: PracticeDay['status'] = 'FULL';
+    let taskDesc = '';
+    let skillsList: string[] = [];
+    let photo = '';
+    let score = 5;
+    let feedback = '';
+
+    if (isWeekend) {
+      status = 'WEEKEND';
+      taskDesc = 'Dam olish kuni (Shanba / Yakshanba)';
+    } else if (i > 24) {
+      status = 'FUTURE';
+      taskDesc = 'Kelgusi amaliyot kuni';
+    } else if (i === 18) {
+      status = 'EMPTY';
+      taskDesc = 'Sababsiz hisobot topshirilmadi (O\'tkazib yuborilgan)';
+    } else if (i === 12 || i === 19) {
+      status = 'PARTIAL';
+      taskDesc = 'API endpointlarni loyihalash va bazaga ulanishni sozlash';
+      skillsList = ['Node.js', 'PostgreSQL'];
+      score = 4;
+      feedback = 'Fotohisobot biriktirilishi kutilmoqda.';
+    } else {
+      status = 'FULL';
+      taskDesc = `FastAPI va Docker konteynerlashtirish arxitekturasini ${i}-kuni uchun sozlash`;
+      skillsList = ['Docker', 'FastAPI', 'Python'];
+      photo = `day_${i}_architecture_screenshot.png`;
+      score = 5;
+      feedback = 'Vazifalar a’lo darajada bajarildi.';
+    }
+
+    days.push({
+      dayNumber: i,
+      date: dateStr,
+      weekday: weekdayName,
+      isWeekend,
+      status,
+      taskDescription: taskDesc,
+      skills: skillsList,
+      photoTitle: photo,
+      mentorScore: score,
+      mentorFeedback: feedback
+    });
+  }
+  return days;
+};
+
 export default function TeacherDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<string>('overview');
@@ -106,6 +181,7 @@ export default function TeacherDashboard() {
 
   // Selected student for detail/logbook modal
   const [selectedStudentForModal, setSelectedStudentForModal] = useState<TeacherStudent | null>(null);
+  const [selectedHeatmapDay, setSelectedHeatmapDay] = useState<PracticeDay | null>(null);
   const [academicCommentInput, setAcademicCommentInput] = useState('');
 
   // Telegram messaging modal state
@@ -137,11 +213,12 @@ export default function TeacherDashboard() {
       mentor: 'Sardor Bekmurodov',
       mentorPhone: '+998 90 999 11 22',
       mentorScore: 48.0,
-      attendanceRate: '100%',
-      daysCompleted: '44 / 44 kun',
+      attendanceRate: '91.6%',
+      daysCompleted: '22 / 24 ish kuni',
       contractNo: 'AMAL-2026-0041',
       reportFile: 'Bekzod_Ergashev_Amaliyot_Hisoboti.pdf',
-      status: 'FAOL'
+      status: 'FAOL',
+      practiceDays: generateSamplePracticeDays()
     },
     {
       id: 'ST501825',
@@ -151,11 +228,12 @@ export default function TeacherDashboard() {
       mentor: 'Sardor Bekmurodov',
       mentorPhone: '+998 90 999 11 22',
       mentorScore: 47.0,
-      attendanceRate: '98.5%',
-      daysCompleted: '42 / 60 kun',
+      attendanceRate: '95.0%',
+      daysCompleted: '23 / 24 ish kuni',
       contractNo: 'AMAL-2026-0042',
       reportFile: 'Sardor_Rahimov_Hisobot_2026.pdf',
-      status: 'FAOL'
+      status: 'FAOL',
+      practiceDays: generateSamplePracticeDays()
     },
     {
       id: 'ST501826',
@@ -165,11 +243,12 @@ export default function TeacherDashboard() {
       mentor: 'Sardor Bekmurodov',
       mentorPhone: '+998 90 999 11 22',
       mentorScore: 49.0,
-      attendanceRate: '95.0%',
-      daysCompleted: '42 / 60 kun',
+      attendanceRate: '98.0%',
+      daysCompleted: '24 / 24 ish kuni',
       contractNo: 'AMAL-2026-0043',
       reportFile: 'Madina_Karimova_Hisobot_2026.pdf',
-      status: 'FAOL'
+      status: 'FAOL',
+      practiceDays: generateSamplePracticeDays()
     }
   ]);
 
@@ -669,13 +748,19 @@ export default function TeacherDashboard() {
                             className="hover:bg-zinc-50 transition-colors group"
                           >
                             <td
-                              onClick={() => setSelectedStudentForModal(s)}
+                              onClick={() => {
+                                setSelectedStudentForModal(s);
+                                setSelectedHeatmapDay(s.practiceDays[0] || null);
+                              }}
                               className="py-3 px-3 font-mono font-bold text-violet-700 cursor-pointer"
                             >
                               {s.id}
                             </td>
                             <td
-                              onClick={() => setSelectedStudentForModal(s)}
+                              onClick={() => {
+                                setSelectedStudentForModal(s);
+                                setSelectedHeatmapDay(s.practiceDays[0] || null);
+                              }}
                               className="py-3 px-3 font-semibold text-zinc-900 group-hover:text-blue-600 transition-colors cursor-pointer"
                             >
                               {s.name}
@@ -694,7 +779,10 @@ export default function TeacherDashboard() {
                                 <span>Telegram</span>
                               </button>
                               <button
-                                onClick={() => setSelectedStudentForModal(s)}
+                                onClick={() => {
+                                  setSelectedStudentForModal(s);
+                                  setSelectedHeatmapDay(s.practiceDays[0] || null);
+                                }}
                                 className="inline-flex items-center space-x-1 px-2.5 py-1 bg-zinc-900 text-white hover:bg-zinc-800 rounded-lg text-[11px] font-medium transition-colors"
                               >
                                 <span>Taftish</span>
@@ -833,107 +921,214 @@ export default function TeacherDashboard() {
         </div>
       </div>
 
-      {/* INTERACTIVE DETAIL MODAL: TALABA KUNDALIGI VA TAFTISH KARTASI */}
+      {/* INTERACTIVE FULL DOSSIER MODAL WITH CONTRIBUTIONS HEATMAP */}
       {selectedStudentForModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
             {/* Gradient Top Line */}
-            <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-blue-500 to-emerald-500" />
+            <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-blue-500 to-emerald-500 shrink-0" />
 
-            <div className="p-6 space-y-5">
+            <div className="p-6 overflow-y-auto space-y-6 flex-1">
               {/* Modal Header */}
-              <div className="flex items-start justify-between pb-3 border-b border-zinc-100">
+              <div className="flex items-start justify-between pb-4 border-b border-zinc-100">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-2xl bg-violet-50 text-violet-700 flex items-center justify-center shrink-0">
-                    <GraduationCap className="w-5 h-5" />
+                  <div className="w-12 h-12 rounded-2xl bg-violet-50 text-violet-700 flex items-center justify-center shrink-0">
+                    <GraduationCap className="w-6 h-6" />
                   </div>
                   <div>
                     <div className="flex items-center space-x-2">
-                      <h3 className="text-sm font-bold text-zinc-900">{selectedStudentForModal.name}</h3>
-                      <span className="font-mono text-[10px] font-bold text-violet-700 bg-violet-50 px-2 py-0.5 rounded border border-violet-200">
+                      <h3 className="text-base font-bold text-zinc-900">{selectedStudentForModal.name}</h3>
+                      <span className="font-mono text-xs font-bold text-violet-700 bg-violet-50 px-2 py-0.5 rounded border border-violet-200">
                         {selectedStudentForModal.id}
                       </span>
                     </div>
-                    <p className="text-[11px] text-zinc-400 mt-0.5">
-                      Guruhi: <span className="font-mono text-zinc-700">{selectedStudentForModal.group}</span> • Shartnoma: <span className="font-mono text-emerald-700">{selectedStudentForModal.contractNo}</span>
+                    <p className="text-xs text-zinc-500 mt-0.5">
+                      Guruhi: <span className="font-mono text-zinc-800 font-semibold">{selectedStudentForModal.group}</span> • Shartnoma: <span className="font-mono text-emerald-700 font-semibold">{selectedStudentForModal.contractNo}</span> • Korxona: <span className="font-semibold text-zinc-800">{selectedStudentForModal.company}</span>
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setSelectedStudentForModal(null)}
-                  className="p-1 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 hover:rotate-90 transition-transform duration-200"
+                  className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 hover:rotate-90 transition-transform duration-200"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Quick Status Cards */}
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50">
-                  <span className="text-[10px] text-zinc-400 block">Amaliyot Korxonasi:</span>
-                  <p className="font-semibold text-zinc-900 mt-0.5">{selectedStudentForModal.company}</p>
-                  <p className="text-[11px] text-zinc-500">Mentori: {selectedStudentForModal.mentor}</p>
+              {/* KPI Block: Attendance & Progress */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200/80 space-y-2">
+                  <span className="text-xs text-zinc-500 font-medium">Haqiqiy Ish Kunlari Davomati</span>
+                  <div className="flex items-baseline justify-between">
+                    <p className="text-xl font-bold text-emerald-600">22 / 24 kun</p>
+                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">91.6%</span>
+                  </div>
+                  <div className="w-full bg-zinc-200 h-2 rounded-full overflow-hidden">
+                    <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-full rounded-full transition-all duration-700 ease-out" style={{ width: '91.6%' }} />
+                  </div>
                 </div>
 
-                <div className="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50">
-                  <span className="text-[10px] text-zinc-400 block">Davomat Natijasi:</span>
-                  <p className="font-bold text-emerald-600 mt-0.5">{selectedStudentForModal.attendanceRate}</p>
-                  <p className="text-[11px] text-zinc-500">{selectedStudentForModal.daysCompleted}</p>
+                <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200/80 space-y-2">
+                  <span className="text-xs text-zinc-500 font-medium">Dam Olish Kunlari Hisobi</span>
+                  <p className="text-xl font-bold text-zinc-900 mt-1">6 kun</p>
+                  <p className="text-[11px] text-zinc-400">Shanba va Yakshanba (hisobga kiritilmagan)</p>
                 </div>
 
-                <div className="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50">
-                  <span className="text-[10px] text-zinc-400 block">Mentor Bali (0-50):</span>
-                  <p className="font-bold text-zinc-900 mt-0.5">{selectedStudentForModal.mentorScore} / 50 ball</p>
-                </div>
-
-                <div className="p-3 rounded-xl border border-zinc-200/80 bg-zinc-50/50">
-                  <span className="text-[10px] text-zinc-400 block">OTM Himoya Bali:</span>
-                  <p className="font-bold text-blue-600 mt-0.5">{defenseScores[selectedStudentForModal.id] || 0} / 50 ball</p>
+                <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200/80 space-y-2">
+                  <span className="text-xs text-zinc-500 font-medium">Mentor va OTM ECTS Bali</span>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-xs font-semibold text-zinc-700">Mentor: {selectedStudentForModal.mentorScore}/50</span>
+                    <span className="text-xs font-semibold text-blue-600">OTM: {defenseScores[selectedStudentForModal.id] || 0}/50</span>
+                  </div>
+                  <p className="text-xs font-bold text-emerald-700">
+                    Jami: {selectedStudentForModal.mentorScore + (defenseScores[selectedStudentForModal.id] || 0)} / 100 ({calculateGradeLetter(selectedStudentForModal.mentorScore + (defenseScores[selectedStudentForModal.id] || 0)).grade})
+                  </p>
                 </div>
               </div>
 
-              {/* Academic Comment Input */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-zinc-700">Ilmiy Rahbar Taqrizi / Izohi:</label>
-                <textarea
-                  rows={3}
-                  placeholder="Talabaning amaliyot faoliyati bo'yicha ilmiy xulosangizni yozing..."
-                  value={academicCommentInput}
-                  onChange={(e) => setAcademicCommentInput(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 bg-white placeholder-zinc-400 text-zinc-900 focus:outline-none focus:border-zinc-900 resize-none"
-                />
+              {/* CONTRIBUTIONS HEATMAP (30-DAY PRACTICE MATRIX) */}
+              <div className="space-y-3 p-4 rounded-2xl border border-zinc-200 bg-white shadow-xs">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-zinc-900 uppercase tracking-wider">30 Kunlik Amaliyot Matritsasi (Contributions Heatmap)</h4>
+                    <p className="text-[11px] text-zinc-500">Har bir katakcha ustiga bosib kunlik hisobot va fotolavhani tekshiring</p>
+                  </div>
+                  <div className="flex items-center space-x-3 text-[10px] font-medium text-zinc-600">
+                    <span className="flex items-center space-x-1"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" /><span>To'liq (Full)</span></span>
+                    <span className="flex items-center space-x-1"><span className="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block" /><span>Chala (Partial)</span></span>
+                    <span className="flex items-center space-x-1"><span className="w-2.5 h-2.5 rounded-sm bg-rose-500 inline-block" /><span>Bo'sh (Empty)</span></span>
+                    <span className="flex items-center space-x-1"><span className="w-2.5 h-2.5 rounded-sm bg-zinc-200 border border-dashed border-zinc-400 inline-block" /><span>Dam olish</span></span>
+                  </div>
+                </div>
+
+                {/* Heatmap Grid (30 boxes) */}
+                <div className="grid grid-cols-10 sm:grid-cols-15 gap-2 pt-2">
+                  {selectedStudentForModal.practiceDays.map((pd) => {
+                    let bgClass = 'bg-emerald-500 text-white hover:bg-emerald-600';
+                    if (pd.status === 'PARTIAL') bgClass = 'bg-amber-400 text-zinc-900 hover:bg-amber-500';
+                    if (pd.status === 'EMPTY') bgClass = 'bg-rose-500 text-white hover:bg-rose-600';
+                    if (pd.status === 'WEEKEND') bgClass = 'bg-zinc-100 text-zinc-400 border border-dashed border-zinc-300';
+                    if (pd.status === 'FUTURE') bgClass = 'bg-zinc-50 text-zinc-300 border border-zinc-200';
+
+                    const isSelected = selectedHeatmapDay?.dayNumber === pd.dayNumber;
+
+                    return (
+                      <button
+                        key={pd.dayNumber}
+                        onClick={() => setSelectedHeatmapDay(pd)}
+                        title={`${pd.dayNumber}-kun (${pd.date}): ${pd.taskDescription}`}
+                        className={`h-9 rounded-lg flex flex-col items-center justify-center font-mono text-[11px] font-bold transition-all transform hover:scale-105 ${bgClass} ${
+                          isSelected ? 'ring-2 ring-zinc-900 ring-offset-2 shadow-md' : ''
+                        }`}
+                      >
+                        <span>{pd.dayNumber}</span>
+                        <span className="text-[8px] opacity-80">{pd.isWeekend ? 'Dam' : 'Kun'}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              {/* Footer Buttons */}
-              <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
-                <button
-                  onClick={() => {
-                    setNotification(`${selectedStudentForModal.reportFile} yuklab olindi!`);
-                    setTimeout(() => setNotification(null), 2500);
-                  }}
-                  className="inline-flex items-center space-x-1.5 text-xs text-zinc-700 hover:text-zinc-900 font-medium"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Hisobot faylini ko'rish</span>
-                </button>
+              {/* SELECTED DAY DETAILS PANEL */}
+              {selectedHeatmapDay && (
+                <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200/90 space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-zinc-200">
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="w-4 h-4 text-indigo-600" />
+                      <span className="text-xs font-bold text-zinc-900">
+                        {selectedHeatmapDay.dayNumber}-kun ({selectedHeatmapDay.date}, {selectedHeatmapDay.weekday}) — {
+                          selectedHeatmapDay.status === 'FULL' ? '🟢 To\'liq Tasdiqlangan' :
+                          selectedHeatmapDay.status === 'PARTIAL' ? '🟡 Chala Hisobot' :
+                          selectedHeatmapDay.status === 'EMPTY' ? '🔴 Sababsiz Qoldirilgan' :
+                          selectedHeatmapDay.status === 'WEEKEND' ? '⚪ Dam Olish Kuni' : '⏳ Kelgusi Kun'
+                        }
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-mono text-zinc-500">Mentor Bali: ⭐ {selectedHeatmapDay.mentorScore || 0}/5</span>
+                  </div>
 
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => setSelectedStudentForModal(null)}
-                    className="px-3.5 py-2 rounded-xl text-xs text-zinc-600 hover:bg-zinc-100"
-                  >
-                    Yopish
-                  </button>
+                  <div className="space-y-2 text-xs">
+                    <p className="text-zinc-800">
+                      <strong>Talaba yozgan ish:</strong> {selectedHeatmapDay.taskDescription}
+                    </p>
+
+                    {selectedHeatmapDay.skills && selectedHeatmapDay.skills.length > 0 && (
+                      <div className="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                        <strong className="text-zinc-600 mr-1">Ko'nikmalar:</strong>
+                        {selectedHeatmapDay.skills.map((skill, idx) => (
+                          <span key={idx} className="px-2 py-0.5 rounded bg-zinc-200 text-zinc-800 text-[10px] font-mono font-bold">
+                            [{skill}]
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {selectedHeatmapDay.photoTitle && (
+                      <div className="flex items-center space-x-2 p-2 rounded-xl bg-white border border-zinc-200">
+                        <ImageIcon className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span className="text-[11px] font-medium text-zinc-700 truncate">{selectedHeatmapDay.photoTitle}</span>
+                        <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold ml-auto">📸 Tasdiqlangan Foto</span>
+                      </div>
+                    )}
+
+                    {selectedHeatmapDay.status === 'EMPTY' && (
+                      <div className="flex items-center justify-between pt-2">
+                        <span className="text-rose-600 font-medium">Talaba bu kuni hisobot topshirmagan!</span>
+                        <button
+                          onClick={() => {
+                            setTelegramModalStudent(selectedStudentForModal);
+                            setSelectedStudentForModal(null);
+                          }}
+                          className="inline-flex items-center space-x-1 px-3 py-1.5 bg-blue-600 text-white rounded-xl text-xs font-medium hover:bg-blue-700 shadow-xs"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>Talabaga Telegramdan Eslatma Yuborish</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* OTM Defense Score Input & Footer Actions */}
+              <div className="pt-2 border-t border-zinc-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center space-x-3 w-full sm:w-auto">
+                  <span className="text-xs font-bold text-zinc-700">OTM Himoya Bali (0-50):</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="50"
+                    step="0.5"
+                    value={defenseScores[selectedStudentForModal.id] || 0}
+                    onChange={(e) => setDefenseScores({
+                      ...defenseScores,
+                      [selectedStudentForModal.id]: Math.min(50, Math.max(0, parseFloat(e.target.value) || 0))
+                    })}
+                    className="w-20 text-xs font-bold text-zinc-900 p-2 border border-zinc-300 rounded-xl text-center focus:outline-none focus:border-zinc-900"
+                  />
+                  <span className="text-xs text-zinc-400">/ 50</span>
+                </div>
+
+                <div className="flex space-x-2 w-full sm:w-auto justify-end">
                   <button
                     onClick={() => {
-                      setNotification(`${selectedStudentForModal.name} ning taqrizi saqlandi!`);
+                      setIsVedomostModalOpen(true);
+                    }}
+                    className="inline-flex items-center space-x-1.5 px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-xl text-xs font-medium transition-all"
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>Vedomost PDF</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setNotification(`${selectedStudentForModal.name} ning to'liq dosye tahrirlari va bahosi saqlandi!`);
                       setSelectedStudentForModal(null);
-                      setAcademicCommentInput('');
                       setTimeout(() => setNotification(null), 3000);
                     }}
-                    className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 shadow-sm"
+                    className="px-5 py-2.5 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 shadow-sm transition-all"
                   >
-                    Taqrizni Saqlash
+                    Saqlash va Yopish
                   </button>
                 </div>
               </div>
