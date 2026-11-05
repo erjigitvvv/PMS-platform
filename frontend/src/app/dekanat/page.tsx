@@ -524,6 +524,7 @@ export default function DekanatDashboard() {
   const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<StudentItem | null>(null);
+  const [activeDossierTab, setActiveDossierTab] = useState<'docs' | 'attendance' | 'grades'>('docs');
   const [selectedTeacher, setSelectedTeacher] = useState<TeacherItem | null>(null);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [assignStudentId, setAssignStudentId] = useState<string>('');
@@ -3005,9 +3006,7 @@ export default function DekanatDashboard() {
       )}
 
       {/* 5. Student Dossier Modal with Tabbed Interface & Gradient Top Line */}
-      {selectedStudent && (() => {
-        const [activeDossierTab, setActiveDossierTab] = useState<'docs' | 'attendance' | 'grades'>('docs');
-        return (
+      {selectedStudent && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl max-w-xl w-full overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]">
               {/* Gradient Top Line */}
@@ -3221,8 +3220,7 @@ export default function DekanatDashboard() {
               </div>
             </div>
           </div>
-        );
-      })()}
+      )}
 
       {/* 6. Application / Document Review Modal */}
       {selectedAppForView && (
@@ -3545,3 +3543,6 @@ export default function DekanatDashboard() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
