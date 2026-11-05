@@ -518,6 +518,17 @@ export default function DekanatDashboard() {
   const [teacherSearchTerm, setTeacherSearchTerm] = useState('');
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
 
+  // Delete Modals state
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState<StudentItem | null>(null);
+
+  // Telegram Messaging Modal state
+  const [isTelegramModalOpen, setIsTelegramModalOpen] = useState(false);
+  const [telegramTargetStudent, setTelegramTargetStudent] = useState<StudentItem | null>(null);
+  const [telegramMessageType, setTelegramMessageType] = useState<'ESLATMA' | 'SHOSHILINCH' | 'RASMIY'>('ESLATMA');
+  const [telegramMessage, setTelegramMessage] = useState('');
+
   // Modals state
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
@@ -919,6 +930,38 @@ export default function DekanatDashboard() {
   };
 
   // Handlers
+  const handleSingleDelete = () => {
+    if (!studentToDelete) return;
+    setStudents(students.filter(s => s.id !== studentToDelete.id));
+    setNotification(`${studentToDelete.name} tizimdan muvaffaqiyatli o'chirildi.`);
+    setIsDeleteModalOpen(false);
+    setStudentToDelete(null);
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedStudentIds.length === 0) return;
+    const count = selectedStudentIds.length;
+    setStudents(students.filter(s => !selectedStudentIds.includes(s.id)));
+    setSelectedStudentIds([]);
+    setNotification(`${count} nafar talaba tizimdan muvaffaqiyatli o'chirildi.`);
+    setIsBulkDeleteModalOpen(false);
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleSendTelegramMessage = () => {
+    if (!telegramMessage.trim()) return;
+    setNotification(
+      telegramTargetStudent
+        ? `"${telegramTargetStudent.name}" ga @tiupm_bot orqali xabar yuborildi.`
+        : `${selectedStudentIds.length} nafar tanlangan talabaga @tiupm_bot orqali ommaviy xabar yuborildi.`
+    );
+    setIsTelegramModalOpen(false);
+    setTelegramMessage('');
+    setTelegramTargetStudent(null);
+    setTimeout(() => setNotification(null), 3500);
+  };
+
   const handleApproveContract = (appId: string, commentText?: string) => {
     const generatedNo = `AMAL-2026-${Math.floor(1000 + Math.random() * 9000)}`;
     const finalComment = commentText !== undefined ? commentText : (decisionComment || 'Hujjatlar to\'liq, amaliyotga ruxsat berildi');
@@ -1279,54 +1322,142 @@ export default function DekanatDashboard() {
             {/* TAB 1: OVERVIEW DASHBOARD */}
             {activeTab === 'overview' && (
               <div className="space-y-6">
-                {/* KPI Cards Grid */}
+                {/* Dynamic 4 KPI Cards Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-xs space-y-2">
+                  {/* 1. Students Status Card */}
+                  <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-xs space-y-3">
                     <div className="flex items-center justify-between text-zinc-500">
-                      <span className="text-xs font-semibold">Jami Talabalar</span>
+                      <span className="text-xs font-semibold">👥 Talabalar Statusi</span>
                       <Users className="w-4 h-4 text-blue-600" />
                     </div>
-                    <div className="flex items-baseline space-x-2">
-                      <span className="text-2xl font-bold text-zinc-900">{students.length} nafar</span>
-                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">100% qamrov</span>
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-xs text-zinc-500">Jami:</span>
+                        <span className="text-sm font-bold text-zinc-900">{students.length} nafar</span>
+                      </div>
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-xs text-emerald-600 font-medium">Amaliyotda faol:</span>
+                        <span className="text-xs font-bold text-emerald-600">{students.filter(s => s.status === 'FAOL').length}</span>
+                      </div>
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-xs text-rose-600 font-medium">Ustozsizlar:</span>
+                        <span className="text-xs font-bold text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200">
+                          {students.filter(s => s.teacher === 'Biriktirilmagan' || !s.teacher).length} nafar
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-xs text-amber-600 font-medium">Xavf ostidagilar:</span>
+                        <span className="text-xs font-bold text-amber-600 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                          {students.filter(s => {
+                            const attNum = parseInt(s.attendance) || 0;
+                            return attNum < 60;
+                          }).length} nafar
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-[11px] text-zinc-400">4 ta akademik guruh</p>
                   </div>
 
-                  <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-xs space-y-2">
+                  {/* 2. Contracts Dynamics Card */}
+                  <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-xs space-y-3">
                     <div className="flex items-center justify-between text-zinc-500">
-                      <span className="text-xs font-semibold">Faol Shartnomalar</span>
+                      <span className="text-xs font-semibold">📑 Shartnomalar Dinamikasi</span>
                       <FileCheck className="w-4 h-4 text-emerald-600" />
                     </div>
-                    <div className="flex items-baseline space-x-2">
-                      <span className="text-2xl font-bold text-zinc-900">{applications.filter(a => a.status === 'APPROVED').length + 26} ta</span>
-                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">QR Tasdiqlangan</span>
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-xs text-emerald-700 font-medium">Tasdiqlangan:</span>
+                        <span className="text-sm font-bold text-emerald-700">{applications.filter(a => a.status === 'APPROVED').length + 26} ta</span>
+                      </div>
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-xs text-amber-600 font-medium">Ko'rib chiqilmoqda:</span>
+                        <span className="text-xs font-bold text-amber-600">{applications.filter(a => a.status === 'SUBMITTED').length} ta</span>
+                      </div>
                     </div>
-                    <p className="text-[11px] text-zinc-400">{applications.filter(a => a.status === 'SUBMITTED').length} ta kutilmoqda</p>
+                    {/* Animated Progress Bar */}
+                    <div className="space-y-1 pt-1">
+                      <div className="flex justify-between text-[10px] font-bold text-zinc-400">
+                        <span>Qamrov darajasi</span>
+                        <span className="text-emerald-600">92%</span>
+                      </div>
+                      <div className="w-full bg-zinc-100 rounded-full h-2 overflow-hidden">
+                        <div
+                          className="h-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 transition-all duration-700 ease-out"
+                          style={{ width: '92%' }}
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-xs space-y-2">
+                  {/* 3. Teachers Workload (3/3 Rule) Card */}
+                  <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-xs space-y-3">
                     <div className="flex items-center justify-between text-zinc-500">
-                      <span className="text-xs font-semibold">Kafedra Ustozlari</span>
+                      <span className="text-xs font-semibold">👨‍🏫 Ustozlar Yuklamasi (3/3)</span>
                       <BookOpen className="w-4 h-4 text-amber-600" />
                     </div>
-                    <div className="flex items-baseline space-x-2">
-                      <span className="text-2xl font-bold text-zinc-900">{teachers.length} nafar</span>
-                      <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Max 3 yuklama</span>
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-xs text-zinc-500">Jami ustozlar:</span>
+                        <span className="text-sm font-bold text-zinc-900">{teachers.length} nafar</span>
+                      </div>
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-xs text-rose-600 font-medium">100% to'lgan (3/3):</span>
+                        <span className="text-xs font-bold text-rose-600">
+                          {teachers.filter(tc => students.filter(s => s.teacher === tc.name).length >= 3).length} nafar
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-xs text-emerald-600 font-medium">Bo'sh o'rinlar bor:</span>
+                        <span className="text-xs font-bold text-emerald-600">
+                          {teachers.filter(tc => students.filter(s => s.teacher === tc.name).length < 3).length} nafar
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-[11px] text-zinc-400">Ilmiy rahbarlar (1-to-3)</p>
                   </div>
 
-                  <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-xs space-y-2">
+                  {/* 4. Telegram Bot Integration Card */}
+                  <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-xs space-y-3">
                     <div className="flex items-center justify-between text-zinc-500">
-                      <span className="text-xs font-semibold">Hamkor Tashkilotlar</span>
-                      <Briefcase className="w-4 h-4 text-violet-600" />
+                      <span className="text-xs font-semibold">🤖 Telegram Bot</span>
+                      <Globe className="w-4 h-4 text-sky-600" />
                     </div>
-                    <div className="flex items-baseline space-x-2">
-                      <span className="text-2xl font-bold text-zinc-900">4 ta</span>
-                      <span className="text-[10px] font-bold text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded">57 kvota</span>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center space-x-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-xs font-bold text-emerald-700">Bot faol (@tiupm_bot)</span>
+                      </div>
+                      <p className="text-[11px] text-zinc-500 leading-snug">
+                        Yetkazilgan shaxsiy va ommaviy bildirishnomalar: <b className="text-zinc-900 font-mono">1,428 ta</b>
+                      </p>
+                      <span className="text-[10px] text-sky-700 bg-sky-50 px-2 py-0.5 rounded font-mono font-bold inline-block border border-sky-200">
+                        Webhook: Active (200 OK)
+                      </span>
                     </div>
-                    <p className="text-[11px] text-zinc-400">Uzum, IT Park, Click...</p>
+                  </div>
+                </div>
+
+                {/* Groups Attendance & Activity Matrix */}
+                <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm space-y-4">
+                  <h3 className="text-sm font-bold text-zinc-900">📊 Guruhlar Bo'yicha Jonli Davomat va Hisobot Faolligi Matritsasi</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[
+                      { group: 'DI-202-22', total: 12, attendance: '96%', color: 'from-blue-500 to-indigo-600' },
+                      { group: 'DI-201-22', total: 11, attendance: '91%', color: 'from-emerald-500 to-teal-600' },
+                      { group: 'AI-101-23', total: 9, attendance: '88%', color: 'from-violet-500 to-purple-600' }
+                    ].map((g, idx) => (
+                      <div key={idx} className="p-4 rounded-xl border border-zinc-200 bg-zinc-50/50 space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-bold text-zinc-900 font-mono">{g.group}</span>
+                          <span className="text-xs font-bold text-emerald-600">{g.attendance}</span>
+                        </div>
+                        <p className="text-[11px] text-zinc-500">Talabalar soni: <b>{g.total} nafar</b></p>
+                        <div className="w-full bg-zinc-200 rounded-full h-2 overflow-hidden">
+                          <div
+                            className={`h-2 rounded-full bg-gradient-to-r ${g.color} transition-all duration-700 ease-out`}
+                            style={{ width: g.attendance }}
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -1522,13 +1653,23 @@ export default function DekanatDashboard() {
                               </button>
                               <button
                                 onClick={() => {
-                                  setNotification(`Talaba ${st.name} ga Telegram xabari yuborildi!`);
-                                  setTimeout(() => setNotification(null), 3000);
+                                  setTelegramTargetStudent(st);
+                                  setIsTelegramModalOpen(true);
                                 }}
-                                className="p-1.5 text-emerald-600 hover:text-emerald-700 hover:bg-white rounded-lg transition-all"
-                                title="Telegram xabari"
+                                className="p-1.5 text-sky-600 hover:text-sky-700 hover:bg-white rounded-lg transition-all"
+                                title="Talabaga @tiupm_bot orqali xabar yuborish"
                               >
-                                <Globe className="w-3.5 h-3.5" />
+                                <Send className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setStudentToDelete(st);
+                                  setIsDeleteModalOpen(true);
+                                }}
+                                className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-all"
+                                title="Talabani tizimdan o'chirish"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 onClick={() => setSelectedStudent(st)}
@@ -3491,6 +3632,195 @@ export default function DekanatDashboard() {
         </div>
       )}
 
+      {/* 8. Single Delete Confirmation Modal */}
+      {isDeleteModalOpen && studentToDelete && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="h-1.5 w-full bg-gradient-to-r from-rose-500 via-amber-500 to-rose-600" />
+            <div className="p-6 space-y-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold shrink-0">
+                  <Trash2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-900">Talabani Tizimdan O'chirish</h3>
+                  <p className="text-xs text-zinc-500">ID: {studentToDelete.id} • {studentToDelete.group}</p>
+                </div>
+              </div>
+
+              <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-2xl text-xs text-zinc-700 leading-relaxed">
+                Haqiqatan ham <b>{studentToDelete.name}</b> ni tizimdan o'chirmoqchimisiz? Barcha shartnomalar, kunlik fotohisobotlar va amaliyot baholari qayta tiklanmaydigan qilib o'chiriladi.
+              </div>
+
+              <div className="flex items-center justify-end space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setStudentToDelete(null);
+                  }}
+                  className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl text-xs font-medium transition-colors"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSingleDelete}
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-medium transition-colors shadow-sm"
+                >
+                  Ha, Butunlay O'chirilsin
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 9. Bulk Delete Confirmation Modal */}
+      {isBulkDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="h-1.5 w-full bg-gradient-to-r from-rose-500 via-amber-500 to-rose-600" />
+            <div className="p-6 space-y-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold shrink-0">
+                  <Trash2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-900">Tanlangan Talabalarni O'chirish</h3>
+                  <p className="text-xs text-zinc-500">{selectedStudentIds.length} nafar talaba tanlandi</p>
+                </div>
+              </div>
+
+              <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-2xl text-xs text-zinc-700 leading-relaxed">
+                Haqiqatan ham tanlangan <b>{selectedStudentIds.length} nafar talaba</b>ni tizimdan o'chirmoqchimisiz? Barcha ma'lumotlar qayta tiklanmaydigan qilib o'chiriladi.
+              </div>
+
+              <div className="flex items-center justify-end space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsBulkDeleteModalOpen(false)}
+                  className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl text-xs font-medium transition-colors"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBulkDelete}
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-medium transition-colors shadow-sm"
+                >
+                  Ha, Barchasini O'chirish
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 10. Telegram Messaging Modal (@tiupm_bot) */}
+      {isTelegramModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="h-1.5 w-full bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-600" />
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
+                    <Send className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-zinc-900">@tiupm_bot Orqali Xabar Yuborish</h3>
+                    <p className="text-xs text-zinc-500">
+                      {telegramTargetStudent
+                        ? `Kimga: ${telegramTargetStudent.name} (${telegramTargetStudent.group}) • ID: ${telegramTargetStudent.id}`
+                        : `${selectedStudentIds.length} nafar tanlangan talaba`}
+                    </p>
+                  </div>
+                </div>
+                <button onClick={() => setIsTelegramModalOpen(false)} className="text-zinc-400 hover:text-zinc-600">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Quick Templates */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-zinc-700">Tezkor Shablonlar:</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    "📌 3 tomonlama amaliyot shartnomangizni zudlik bilan yuklang!",
+                    "⚠️ Diqqat! Sizda fotohisobot yuklanmagan, davomatingiz pasaymoqda.",
+                    "📄 Amaliyot yo'llanma xatingiz tayyor, dekanatdan olib keting.",
+                    "🏆 Amaliyot kundaligi va yakuniy hisobotingiz qabul qilindi."
+                  ].map((tmpl, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setTelegramMessage(tmpl)}
+                      className="text-[11px] px-2.5 py-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-lg transition-colors text-left"
+                    >
+                      {tmpl}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Message Type Badges */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-zinc-700">Xabar Turi:</label>
+                <div className="flex gap-2">
+                  {[
+                    { id: 'ESLATMA', label: '🔵 Eslatma', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+                    { id: 'SHOSHILINCH', label: '🔴 Shoshilinch', color: 'bg-rose-50 text-rose-700 border-rose-200' },
+                    { id: 'RASMIY', label: '🟢 Rasmiy Bildirishnoma', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' }
+                  ].map(tp => (
+                    <button
+                      key={tp.id}
+                      type="button"
+                      onClick={() => setTelegramMessageType(tp.id as any)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                        telegramMessageType === tp.id ? `${tp.color} ring-2 ring-zinc-900` : 'bg-white text-zinc-600 border-zinc-200'
+                      }`}
+                    >
+                      {tp.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Textarea */}
+              <div className="space-y-1">
+                <label className="block text-xs font-semibold text-zinc-700">Xabar Matni:</label>
+                <textarea
+                  rows={3}
+                  value={telegramMessage}
+                  onChange={(e) => setTelegramMessage(e.target.value)}
+                  placeholder="Talabaga yuboriladigan xabar matnini kiriting..."
+                  className="w-full text-xs p-3 rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 bg-zinc-50/50 font-sans"
+                />
+              </div>
+
+              <div className="flex items-center justify-end space-x-2 pt-2 border-t border-zinc-100">
+                <button
+                  type="button"
+                  onClick={() => setIsTelegramModalOpen(false)}
+                  className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-xl text-xs font-medium"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSendTelegramMessage}
+                  className="inline-flex items-center space-x-1.5 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-medium shadow-sm transition-colors"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>@tiupm_bot Orqali Yuborish</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* BULK ACTIONS FLOATING BAR */}
       {selectedStudentIds.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-zinc-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center space-x-4 border border-zinc-700 animate-in fade-in slide-in-from-bottom-5 duration-200">
@@ -3524,13 +3854,21 @@ export default function DekanatDashboard() {
 
             <button
               onClick={() => {
-                setNotification(`${selectedStudentIds.length} ta talabaga Telegram xabarnomasi yuborildi.`);
-                setTimeout(() => setNotification(null), 3000);
+                setTelegramTargetStudent(null);
+                setIsTelegramModalOpen(true);
               }}
               className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-medium transition-colors flex items-center space-x-1.5"
             >
-              <Globe className="w-3.5 h-3.5 text-cyan-400" />
+              <Send className="w-3.5 h-3.5 text-sky-400" />
               <span>Telegram Xabar</span>
+            </button>
+
+            <button
+              onClick={() => setIsBulkDeleteModalOpen(true)}
+              className="px-3 py-1.5 bg-rose-600/90 hover:bg-rose-600 text-white rounded-xl text-xs font-medium transition-colors flex items-center space-x-1.5 shadow-xs"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Tanlanganlarni O'chirish ({selectedStudentIds.length})</span>
             </button>
 
             <button
