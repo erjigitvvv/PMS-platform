@@ -543,6 +543,9 @@ export default function DekanatDashboard() {
 
   // Dekanat Settings State
   const [dekanatDigits, setDekanatDigits] = useState('204581');
+
+  // Student Dossier Editing State
+  const [editedStudent, setEditedStudent] = useState<StudentItem | null>(null);
   const [tempDigits, setTempDigits] = useState('204581');
   const [facultyName, setFacultyName] = useState('Axborot Texnologiyalari Fakulteti');
   const [deanName, setDeanName] = useState('Alisher Qodirov');
@@ -1635,7 +1638,11 @@ export default function DekanatDashboard() {
                           <td className="p-3 text-right">
                             <div className="inline-flex items-center space-x-1 bg-zinc-50 border border-zinc-200/80 p-1 rounded-xl shadow-2xs">
                               <button
-                                onClick={() => setSelectedStudent(st)}
+                                onClick={() => {
+                                  setSelectedStudent(st);
+                                  setEditedStudent({ ...st });
+                                  setIsStudentModalOpen(true);
+                                }}
                                 className="p-1.5 text-zinc-600 hover:text-zinc-900 hover:bg-white rounded-lg transition-all"
                                 title="Talaba dossierini ko'rish"
                               >
@@ -1672,7 +1679,11 @@ export default function DekanatDashboard() {
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                               <button
-                                onClick={() => setSelectedStudent(st)}
+                                onClick={() => {
+                                  setSelectedStudent(st);
+                                  setEditedStudent({ ...st });
+                                  setIsStudentModalOpen(true);
+                                }}
                                 className="p-1.5 text-amber-600 hover:text-amber-700 hover:bg-white rounded-lg transition-all"
                                 title="Tahrirlash / Ustoz biriktirish"
                               >

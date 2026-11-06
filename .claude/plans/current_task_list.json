@@ -1,12 +1,9 @@
 {
   "items": [
-    { "content": "Update teacher workload capacity to 3/3 with animated gradient progress bar", "status": "completed" },
-    { "content": "Implement 2-step decision workflow for logbook reviews (Accept / Request Revision)", "status": "completed" },
-    { "content": "Create formal Kafedra ECTS grading Vedomost PDF export modal", "status": "completed" },
-    { "content": "Add personal Telegram messaging modal for students (@tiupm_bot)", "status": "completed" },
-    { "content": "Add methodic guide and syllabus upload modal in Reports", "status": "completed" },
-    { "content": "Add modal UI standards (gradient top line and rotating close buttons)", "status": "completed" },
-    { "content": "Build frontend and push changes to GitHub", "status": "in_progress" }
+    { "content": "Implement Student Dossier Editing & 30-Day Heatmap", "status": "in_progress" },
+    { "content": "Implement Teacher CRUD & Telegram Messaging", "status": "pending" },
+    { "content": "Implement Partner Organizations Folder Pocket Catalog in Dekanat & Student Portals", "status": "pending" },
+    { "content": "Run Build Verification and Push to GitHub", "status": "pending" }
   ],
-  "scope": "continuation"
+  "scope": "first_task"
 }
