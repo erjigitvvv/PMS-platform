@@ -632,6 +632,7 @@ export default function DekanatDashboard() {
     phone: '+998 90 '
   });
 
+  const [selectedPartnerForView, setSelectedPartnerForView] = useState<PartnerCompany | null>(null);
   const [newPartner, setNewPartner] = useState({
     name: '',
     shortName: '',
@@ -2069,76 +2070,49 @@ export default function DekanatDashboard() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {partners.map((pr) => (
-                    <div key={pr.id} className="p-5 rounded-2xl border border-zinc-200 bg-zinc-50/40 space-y-3">
-                      <div className="flex items-start justify-between">
+                    <div
+                      key={pr.id}
+                      onClick={() => setSelectedPartnerForView(pr)}
+                      className="relative h-44 rounded-3xl overflow-hidden cursor-pointer group shadow-lg
+                                 bg-gradient-to-br from-purple-700 to-indigo-800 transition-all duration-300
+                                 hover:scale-[1.01] active:scale-[0.99] folder-pocket"
+                    >
+                      {/* Frosted Glass Effect for the top part */}
+                      <div className="absolute inset-0 z-10 p-5 flex flex-col justify-between">
+                        {/* Company Logo and Name */}
                         <div className="flex items-center space-x-3">
                           {pr.logoUrl ? (
-                            <img src={pr.logoUrl} alt={pr.name} className="w-10 h-10 rounded-xl object-contain border border-zinc-200 bg-white p-0.5 shadow-sm shrink-0" />
+                            <img src={pr.logoUrl} alt={pr.name} className="w-10 h-10 rounded-xl object-contain bg-white p-0.5 shadow-md shrink-0" />
                           ) : (
-                            <div className={`w-10 h-10 rounded-xl ${pr.logoBg} text-white font-bold flex items-center justify-center text-xs shadow-sm shrink-0`}>
+                            <div className={`w-10 h-10 rounded-xl ${pr.logoBg} text-white font-bold flex items-center justify-center text-xs shadow-md shrink-0`}>
                               {pr.logoText}
                             </div>
                           )}
-                          <div>
-                            <h4 className="text-xs font-bold text-zinc-900">{pr.name}</h4>
-                            <p className="text-[11px] text-zinc-500">{pr.category}</p>
+                          <h4 className="text-sm font-bold text-white tracking-tight">{pr.name}</h4>
+                        </div>
+
+                        {/* Quota and Status */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-white/80 font-mono">
+                            {pr.occupied} / {pr.quota} {lang === 'uz' ? 'talaba' : 'студентов'}
+                          </span>
+                          <span className="px-2 py-0.5 bg-white/20 text-white text-[10px] font-bold rounded-full border border-white/30">
+                            {pr.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* White card pocket effect (bottom part) */}
+                      <div className="absolute bottom-0 left-0 right-0 h-2/3 bg-white z-0 rounded-t-2xl p-5 pt-7
+                                  shadow-inner-top-lg opacity-0 group-hover:opacity-100 group-hover:translate-y-0
+                                  translate-y-full transition-all duration-300 ease-out-back transform-gpu">
+                        <div className="space-y-1">
+                          <p className="text-xs text-zinc-600 font-medium">{pr.category}</p>
+                          <div className="flex items-center text-[11px] text-zinc-500 space-x-1">
+                            <MapPin className="w-3 h-3 text-zinc-400" />
+                            <span>{pr.address}</span>
                           </div>
                         </div>
-                        <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 font-bold text-[10px] rounded border border-emerald-200">
-                          {pr.status}
-                        </span>
-                      </div>
-
-                      <div className="text-[11px] text-zinc-600 space-y-1 bg-white p-3 rounded-xl border border-zinc-200/60">
-                        <p><b>STIR (INN):</b> <span className="font-mono">{pr.tin}</span></p>
-                        <p><b>Rahbar:</b> {pr.dir}</p>
-                        <p><b>Telefon:</b> <span className="font-mono">{pr.phone}</span></p>
-                        <p><b>Manzil:</b> {pr.address}</p>
-                      </div>
-
-                      <div className="flex justify-between items-center text-xs pt-1">
-                        <span className="text-zinc-500">Amaliyot Kvotasi:</span>
-                        <span className="font-bold text-zinc-900 bg-white px-2.5 py-1 rounded-lg border border-zinc-200">
-                          {pr.occupied} / {pr.quota} talaba biriktirilgan
-                        </span>
-                      </div>
-
-                      {/* Edit & Delete Action Buttons */}
-                      <div className="flex items-center space-x-2 pt-2 border-t border-zinc-200/60">
-                        <button
-                          onClick={() => {
-                            setNewPartner({
-                              name: pr.name,
-                              shortName: pr.shortName,
-                              category: pr.category,
-                              quota: pr.quota,
-                              tin: pr.tin,
-                              dir: pr.dir,
-                              phone: pr.phone,
-                              address: pr.address,
-                              logoUrl: pr.logoUrl || ''
-                            });
-                            // Remove old and open modal to edit
-                            setPartners(partners.filter(p => p.id !== pr.id));
-                            setIsPartnerModalOpen(true);
-                          }}
-                          className="flex-1 py-1.5 bg-white border border-zinc-200 hover:border-zinc-900 text-zinc-700 rounded-xl text-[11px] font-medium transition-all shadow-2xs flex items-center justify-center space-x-1.5"
-                        >
-                          <RefreshCw className="w-3 h-3 text-zinc-500" />
-                          <span>Tahrirlash</span>
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            setPartners(partners.filter(p => p.id !== pr.id));
-                            setNotification(`"${pr.name}" tashkiloti ro'yxatdan o'chirildi!`);
-                            setTimeout(() => setNotification(null), 3000);
-                          }}
-                          className="py-1.5 px-3 bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 rounded-xl text-[11px] font-medium transition-all flex items-center justify-center space-x-1"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                          <span>O'chirish</span>
-                        </button>
                       </div>
                     </div>
                   ))}
