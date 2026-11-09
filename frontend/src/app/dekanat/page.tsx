@@ -1635,29 +1635,7 @@ export default function DekanatDashboard() {
                     />
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                    {/* Gender Filter Pills */}
-                    <div className="bg-zinc-100/90 p-1 rounded-xl border border-zinc-200/80 inline-flex items-center gap-1 shadow-inner">
-                      {[
-                        { id: 'ALL', label: 'Barcha jinslar' },
-                        { id: 'ERKAK', label: '👨 Erkak' },
-                        { id: 'AYOL', label: '👩 Ayol' },
-                      ].map(gf => (
-                        <button
-                          key={gf.id}
-                          onClick={() => setGenderFilter(gf.id as any)}
-                          className={`rounded-lg px-3 py-1 text-xs transition-all duration-200 ${
-                            genderFilter === gf.id
-                              ? 'bg-white text-zinc-900 shadow-xs font-semibold'
-                              : 'text-zinc-500 hover:text-zinc-900 font-medium'
-                          }`}
-                        >
-                          {gf.label}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Group Filter Pills - Segmented Control Capsule */}
+                  {/* Group Filter Pills - Segmented Control Capsule */}
                     <div className="bg-zinc-100/90 p-1 rounded-xl border border-zinc-200/80 inline-flex items-center gap-1 shadow-inner overflow-x-auto">
                       {['ALL', 'DI-202-22', 'DI-201-22', 'AI-101-23'].map(g => (
                         <button
@@ -1695,7 +1673,8 @@ export default function DekanatDashboard() {
                           />
                         </th>
                         <th className="p-3">Talaba ID / F.I.SH</th>
-                        <th className="p-3">Guruh & Jinsi</th>
+                        <th className="p-3">Guruh</th>
+                        <th className="p-3">Jinsi</th>
                         <th className="p-3">Ilmiy Ustoz</th>
                         <th className="p-3">Amaliyot Korxonasi</th>
                         <th className="p-3">Davomat & Ball</th>
@@ -1729,15 +1708,17 @@ export default function DekanatDashboard() {
                               </div>
                             </div>
                           </td>
+                          <td className="p-3 font-semibold text-zinc-800">
+                            {st.group}
+                          </td>
                           <td className="p-3">
-                            <div className="space-y-1">
-                              <span className="font-semibold text-zinc-800 block">{st.group}</span>
-                              <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
-                                st.gender === 'AYOL' ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-blue-50 text-blue-700 border border-blue-200'
-                              }`}>
-                                {st.gender === 'AYOL' ? '👩 Ayol' : '👨 Erkak'}
-                              </span>
-                            </div>
+                            <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-semibold ${
+                              st.gender === 'AYOL'
+                                ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                                : 'bg-blue-50 text-blue-700 border border-blue-200'
+                            }`}>
+                              {st.gender === 'AYOL' ? 'Ayol' : 'Erkak'}
+                            </span>
                           </td>
                           <td className="p-3">
                             <span className={`px-2 py-1 rounded-lg text-[11px] font-medium ${
@@ -2229,8 +2210,8 @@ export default function DekanatDashboard() {
                             <div className="flex justify-between items-center text-xs">
                               <span className="text-zinc-500">Demografiya:</span>
                               <div className="space-x-1.5">
-                                <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded font-semibold text-[10px]">👨 {maleCount} Erkak</span>
-                                <span className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded font-semibold text-[10px]">👩 {femaleCount} Ayol</span>
+                                <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded font-semibold text-[10px]">Erkak: {maleCount}</span>
+                                <span className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded font-semibold text-[10px]">Ayol: {femaleCount}</span>
                               </div>
                             </div>
 
