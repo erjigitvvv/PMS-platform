@@ -1635,23 +1635,25 @@ export default function DekanatDashboard() {
                     />
                   </div>
 
-                  {/* Group Filter Pills - Segmented Control Capsule */}
-                    <div className="bg-zinc-100/90 p-1 rounded-xl border border-zinc-200/80 inline-flex items-center gap-1 shadow-inner overflow-x-auto">
-                      {['ALL', 'DI-202-22', 'DI-201-22', 'AI-101-23'].map(g => (
-                        <button
-                          key={g}
-                          onClick={() => setGroupFilter(g)}
-                          className={`rounded-lg px-3 py-1 text-xs transition-all duration-200 shrink-0 ${
-                            groupFilter === g
-                              ? 'bg-white text-zinc-900 shadow-xs font-semibold'
-                              : 'text-zinc-500 hover:text-zinc-900 font-medium'
-                          }`}
-                        >
-                          {g === 'ALL' ? 'Barcha guruhlar' : g}
-                        </button>
-                      ))}
-                    </div>
+                  {/* Group Filter Dropdown */}
+                  <div className="relative w-full sm:w-64">
+                    <select
+                      value={groupFilter}
+                      onChange={(e) => setGroupFilter(e.target.value)}
+                      className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-white font-medium text-zinc-800 focus:outline-none focus:border-zinc-900 shadow-2xs cursor-pointer"
+                    >
+                      <option value="ALL">Barcha guruhlar (Barchasi)</option>
+                      {groups.map((grp) => {
+                        const count = students.filter(s => s.group === grp.code).length;
+                        return (
+                          <option key={grp.id} value={grp.code}>
+                            {grp.code} ({count} nafar talaba)
+                          </option>
+                        );
+                      })}
+                    </select>
                   </div>
+                </div>
 
                 {/* Students Table */}
                 <div className="overflow-x-auto border border-zinc-200 rounded-xl">
@@ -1710,14 +1712,8 @@ export default function DekanatDashboard() {
                           <td className="p-3 font-semibold text-zinc-800">
                             {st.group}
                           </td>
-                          <td className="p-3">
-                            <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-semibold ${
-                              st.gender === 'AYOL'
-                                ? 'bg-purple-50 text-purple-700 border border-purple-200'
-                                : 'bg-blue-50 text-blue-700 border border-blue-200'
-                            }`}>
-                              {st.gender === 'AYOL' ? 'Ayol' : 'Erkak'}
-                            </span>
+                          <td className="p-3 text-zinc-700 font-medium">
+                            {st.gender === 'AYOL' ? 'Ayol' : 'Erkak'}
                           </td>
                           <td className="p-3">
                             <span className={`px-2 py-1 rounded-lg text-[11px] font-medium ${
@@ -1734,18 +1730,17 @@ export default function DekanatDashboard() {
                             </div>
                           </td>
                           <td className="p-3 text-right">
-                            <div className="inline-flex items-center space-x-1.5 bg-zinc-50 border border-zinc-200/80 p-1 rounded-xl shadow-2xs">
+                            <div className="inline-flex items-center space-x-1 bg-zinc-50 border border-zinc-200/80 p-1 rounded-xl shadow-2xs">
                               <button
                                 onClick={() => {
                                   setSelectedStudent(st);
                                   setEditedStudent({ ...st });
                                   setIsEditingDossier(false);
                                 }}
-                                className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50/80 hover:bg-blue-100 hover:text-blue-800 rounded-lg transition-all"
-                                title="Talaba dosyesini ko'rish va boshqarish"
+                                className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-white rounded-lg transition-all"
+                                title="Talaba dosyesini ko'rish"
                               >
-                                <Eye className="w-3.5 h-3.5" />
-                                <span>Ko'rish / Dosye</span>
+                                <Eye className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => {
@@ -1755,7 +1750,7 @@ export default function DekanatDashboard() {
                                 className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-all"
                                 title="Talabani tizimdan o'chirish"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
                           </td>
@@ -3523,7 +3518,7 @@ export default function DekanatDashboard() {
                         </span>
                       </div>
                       <p className="text-xs text-zinc-500 mt-0.5">
-                        {selectedStudent.group} • {selectedStudent.company} • Kafedra Ustozi: <b className="text-zinc-700">{selectedStudent.teacher || "Biriktirilmagan"}</b>
+                        {selectedStudent.group} • Jinsi: <span className="font-medium text-zinc-700">{selectedStudent.gender === 'AYOL' ? 'Ayol' : 'Erkak'}</span> • {selectedStudent.company} • Kafedra Ustozi: <b className="text-zinc-700">{selectedStudent.teacher || "Biriktirilmagan"}</b>
                       </p>
                     </div>
                   </div>
@@ -3637,6 +3632,17 @@ export default function DekanatDashboard() {
                           onChange={(e) => setEditedStudent({ ...editedStudent, company: e.target.value })}
                           className="w-full px-3 py-1.5 text-xs rounded-xl border border-zinc-300 bg-white focus:outline-none focus:border-zinc-900"
                         />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-700 mb-0.5">Jinsi:</label>
+                        <select
+                          value={editedStudent.gender || 'ERKAK'}
+                          onChange={(e) => setEditedStudent({ ...editedStudent, gender: e.target.value as any })}
+                          className="w-full px-3 py-1.5 text-xs rounded-xl border border-zinc-300 bg-white focus:outline-none focus:border-zinc-900"
+                        >
+                          <option value="ERKAK">Erkak</option>
+                          <option value="AYOL">Ayol</option>
+                        </select>
                       </div>
                       <div className="sm:col-span-2">
                         <label className="block text-[11px] font-semibold text-zinc-700 mb-0.5">
