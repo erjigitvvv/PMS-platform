@@ -532,6 +532,7 @@ export default function DekanatDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [studentFilter, setStudentFilter] = useState<'all' | 'assigned' | 'unassigned' | 'active'>('all');
   const [groupFilter, setGroupFilter] = useState<string>('ALL');
+  const [genderFilter, setGenderFilter] = useState<'ALL' | 'ERKAK' | 'AYOL'>('ALL');
   const [teacherSearchTerm, setTeacherSearchTerm] = useState('');
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
 
@@ -1236,17 +1237,18 @@ export default function DekanatDashboard() {
                           s.company.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesGroup = groupFilter === 'ALL' || s.group === groupFilter;
+    const matchesGender = genderFilter === 'ALL' || s.gender === genderFilter;
 
     if (activeTab === 'students-unassigned' || studentFilter === 'unassigned') {
-      return matchesSearch && matchesGroup && (s.teacher === 'Biriktirilmagan' || !s.teacher);
+      return matchesSearch && matchesGroup && matchesGender && (s.teacher === 'Biriktirilmagan' || !s.teacher);
     }
     if (activeTab === 'students-companies' || studentFilter === 'assigned') {
-      return matchesSearch && matchesGroup && s.company !== 'Biriktirilmagan';
+      return matchesSearch && matchesGroup && matchesGender && s.company !== 'Biriktirilmagan';
     }
     if (studentFilter === 'active') {
-      return matchesSearch && matchesGroup && s.status === 'FAOL';
+      return matchesSearch && matchesGroup && matchesGender && s.status === 'FAOL';
     }
-    return matchesSearch && matchesGroup;
+    return matchesSearch && matchesGroup && matchesGender;
   });
 
   const filteredTeachers = teachers.filter(tc =>
@@ -1619,10 +1621,10 @@ export default function DekanatDashboard() {
                   </div>
                 </div>
 
-                {/* Filters & Group Pills */}
+                {/* Filters, Group Pills & Gender Filter */}
                 <div className="flex flex-col lg:flex-row items-center justify-between gap-4 pt-2">
                   {/* Search input */}
-                  <div className="relative w-full lg:w-80">
+                  <div className="relative w-full lg:w-72">
                     <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-2.5" />
                     <input
                       type="text"
@@ -1633,21 +1635,44 @@ export default function DekanatDashboard() {
                     />
                   </div>
 
-                  {/* Group Filter Pills - Segmented Control Capsule */}
-                  <div className="bg-zinc-100/90 p-1 rounded-xl border border-zinc-200/80 inline-flex items-center gap-1 shadow-inner overflow-x-auto w-full lg:w-auto">
-                    {['ALL', 'DI-202-22', 'DI-201-22', 'AI-101-23'].map(g => (
-                      <button
-                        key={g}
-                        onClick={() => setGroupFilter(g)}
-                        className={`rounded-lg px-3.5 py-1.5 text-xs transition-all duration-200 shrink-0 ${
-                          groupFilter === g
-                            ? 'bg-white text-zinc-900 shadow-xs font-semibold scale-[1.02]'
-                            : 'text-zinc-500 hover:text-zinc-900 font-medium'
-                        }`}
-                      >
-                        {g === 'ALL' ? 'Barcha guruhlar' : g}
-                      </button>
-                    ))}
+                  <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                    {/* Gender Filter Pills */}
+                    <div className="bg-zinc-100/90 p-1 rounded-xl border border-zinc-200/80 inline-flex items-center gap-1 shadow-inner">
+                      {[
+                        { id: 'ALL', label: 'Barcha jinslar' },
+                        { id: 'ERKAK', label: '👨 Erkak' },
+                        { id: 'AYOL', label: '👩 Ayol' },
+                      ].map(gf => (
+                        <button
+                          key={gf.id}
+                          onClick={() => setGenderFilter(gf.id as any)}
+                          className={`rounded-lg px-3 py-1 text-xs transition-all duration-200 ${
+                            genderFilter === gf.id
+                              ? 'bg-white text-zinc-900 shadow-xs font-semibold'
+                              : 'text-zinc-500 hover:text-zinc-900 font-medium'
+                          }`}
+                        >
+                          {gf.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Group Filter Pills - Segmented Control Capsule */}
+                    <div className="bg-zinc-100/90 p-1 rounded-xl border border-zinc-200/80 inline-flex items-center gap-1 shadow-inner overflow-x-auto">
+                      {['ALL', 'DI-202-22', 'DI-201-22', 'AI-101-23'].map(g => (
+                        <button
+                          key={g}
+                          onClick={() => setGroupFilter(g)}
+                          className={`rounded-lg px-3 py-1 text-xs transition-all duration-200 shrink-0 ${
+                            groupFilter === g
+                              ? 'bg-white text-zinc-900 shadow-xs font-semibold'
+                              : 'text-zinc-500 hover:text-zinc-900 font-medium'
+                          }`}
+                        >
+                          {g === 'ALL' ? 'Barcha guruhlar' : g}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -1670,7 +1695,7 @@ export default function DekanatDashboard() {
                           />
                         </th>
                         <th className="p-3">Talaba ID / F.I.SH</th>
-                        <th className="p-3">Guruh</th>
+                        <th className="p-3">Guruh & Jinsi</th>
                         <th className="p-3">Ilmiy Ustoz</th>
                         <th className="p-3">Amaliyot Korxonasi</th>
                         <th className="p-3">Davomat & Ball</th>
@@ -1704,7 +1729,16 @@ export default function DekanatDashboard() {
                               </div>
                             </div>
                           </td>
-                          <td className="p-3 font-semibold text-zinc-800">{st.group}</td>
+                          <td className="p-3">
+                            <div className="space-y-1">
+                              <span className="font-semibold text-zinc-800 block">{st.group}</span>
+                              <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
+                                st.gender === 'AYOL' ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-blue-50 text-blue-700 border border-blue-200'
+                              }`}>
+                                {st.gender === 'AYOL' ? '👩 Ayol' : '👨 Erkak'}
+                              </span>
+                            </div>
+                          </td>
                           <td className="p-3">
                             <span className={`px-2 py-1 rounded-lg text-[11px] font-medium ${
                               st.teacher === 'Biriktirilmagan' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-zinc-100 text-zinc-800'
@@ -2042,7 +2076,16 @@ export default function DekanatDashboard() {
                         return (
                           <tr key={st.id} className="hover:bg-zinc-50">
                             <td className="p-3 font-bold text-zinc-900">{st.name}</td>
-                            <td className="p-3 font-semibold text-zinc-800">{st.group}</td>
+                            <td className="p-3">
+                            <div className="space-y-1">
+                              <span className="font-semibold text-zinc-800 block">{st.group}</span>
+                              <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
+                                st.gender === 'AYOL' ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-blue-50 text-blue-700 border border-blue-200'
+                              }`}>
+                                {st.gender === 'AYOL' ? '👩 Ayol' : '👨 Erkak'}
+                              </span>
+                            </div>
+                          </td>
                             <td className="p-3 font-mono text-blue-600">{mentorPart} / 50</td>
                             <td className="p-3 font-mono text-amber-600">{teacherPart} / 50</td>
                             <td className="p-3 font-mono font-bold text-zinc-900">{total} / 100</td>
@@ -2099,6 +2142,143 @@ export default function DekanatDashboard() {
                       </button>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: GROUPS CATALOG */}
+            {activeTab === 'groups' && (
+              <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-zinc-100 gap-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-zinc-900">Akademik Guruhlar Katalogi va Salomatlik Matritsasi</h3>
+                    <p className="text-xs text-zinc-500">Fakultet barcha guruhlarining amaliyot ko'rsatkichlari, ustozlar va ommaviy Telegram xabarnomalar.</p>
+                  </div>
+                  <button
+                    onClick={() => setIsGroupModalOpen(true)}
+                    className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 shadow-sm"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Yangi Guruh Yaratish</span>
+                  </button>
+                </div>
+
+                {/* Search & Course Filter */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="relative w-full sm:w-80">
+                    <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-2.5" />
+                    <input
+                      type="text"
+                      placeholder="Guruh kodi yoki mutaxassislik bo'yicha..."
+                      value={groupSearchTerm}
+                      onChange={(e) => setGroupSearchTerm(e.target.value)}
+                      className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-zinc-200 bg-white placeholder-zinc-400 focus:outline-none focus:border-zinc-900"
+                    />
+                  </div>
+                  <div className="bg-zinc-100 p-1 rounded-xl border border-zinc-200 inline-flex items-center gap-1 w-full sm:w-auto">
+                    {(['ALL', '3', '4'] as const).map(c => (
+                      <button
+                        key={c}
+                        onClick={() => setCourseFilter(c)}
+                        className={`px-3 py-1 text-xs rounded-lg font-medium transition-all ${
+                          courseFilter === c ? 'bg-white text-zinc-900 shadow-xs' : 'text-zinc-500 hover:text-zinc-900'
+                        }`}
+                      >
+                        {c === 'ALL' ? 'Barcha kurslar' : `${c}-kurs`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Bento Grid Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {groups
+                    .filter(g => courseFilter === 'ALL' || String(g.course) === courseFilter)
+                    .filter(g => g.code.toLowerCase().includes(groupSearchTerm.toLowerCase()) || g.specialty.toLowerCase().includes(groupSearchTerm.toLowerCase()))
+                    .map(grp => {
+                      const groupStudents = students.filter(s => s.group === grp.code);
+                      const totalCount = groupStudents.length || 12;
+                      const maleCount = groupStudents.filter(s => s.gender === 'ERKAK').length || 7;
+                      const femaleCount = groupStudents.filter(s => s.gender === 'AYOL').length || 5;
+                      const activeCount = groupStudents.filter(s => s.status === 'FAOL').length || 10;
+                      const healthRate = Math.round((activeCount / totalCount) * 100);
+
+                      const healthBadge = healthRate >= 90
+                        ? { label: 'Sogʻlom (Healthy)', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' }
+                        : healthRate >= 75
+                        ? { label: 'Ogohlantirish (Warning)', color: 'bg-amber-50 text-amber-700 border-amber-200' }
+                        : { label: 'Kritik (Critical)', color: 'bg-rose-50 text-rose-700 border-rose-200' };
+
+                      return (
+                        <div key={grp.id} className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all space-y-4">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <span className="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60">
+                                {grp.code}
+                              </span>
+                              <h4 className="text-sm font-bold text-zinc-900 mt-1.5">{grp.specialty}</h4>
+                              <p className="text-[11px] text-zinc-500">{grp.course}-kurs • {grp.shift} • {grp.createdYear}</p>
+                            </div>
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${healthBadge.color}`}>
+                              ● {healthBadge.label}
+                            </span>
+                          </div>
+
+                          {/* Demographics & Progress */}
+                          <div className="space-y-2 pt-2 border-t border-zinc-100">
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="text-zinc-500">Demografiya:</span>
+                              <div className="space-x-1.5">
+                                <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded font-semibold text-[10px]">👨 {maleCount} Erkak</span>
+                                <span className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded font-semibold text-[10px]">👩 {femaleCount} Ayol</span>
+                              </div>
+                            </div>
+
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-[11px] font-bold">
+                                <span className="text-zinc-600">Amaliyot Qamrovi</span>
+                                <span className="text-emerald-600">{healthRate}%</span>
+                              </div>
+                              <div className="w-full bg-zinc-100 rounded-full h-2 overflow-hidden">
+                                <div
+                                  className="h-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 transition-all duration-700"
+                                  style={{ width: `${healthRate}%` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Tutor Details */}
+                          <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-200/60 space-y-1">
+                            <p className="text-[11px] font-bold text-zinc-800">Guruh Tyutori: {grp.tutorName}</p>
+                            <p className="text-[10px] text-zinc-500 font-mono">Tel: {grp.tutorPhone} {grp.tutorTelegram ? `• ${grp.tutorTelegram}` : ''}</p>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="pt-2 flex items-center justify-between gap-2">
+                            <button
+                              onClick={() => {
+                                setGroupFilter(grp.code);
+                                setActiveTab('students-list');
+                              }}
+                              className="flex-1 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-colors text-center shadow-2xs"
+                            >
+                              👥 {totalCount} nafar Talabalar
+                            </button>
+                            <button
+                              onClick={() => {
+                                setNotification(`💬 ${grp.code} guruhi uchun @tiupm_bot orqali ommaviy xabarnoma yuborildi!`);
+                                setTimeout(() => setNotification(null), 3500);
+                              }}
+                              className="px-3 py-2 bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 rounded-xl text-xs font-medium transition-colors"
+                              title="Guruhga Telegram DM yuborish"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             )}
