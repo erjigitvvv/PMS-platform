@@ -1,18 +1,33 @@
-# Implementation Plan: Dekanat Portal Comprehensive Expansion & Notifications
+# Implementation Plan: Dekanat Guruhlar Katalogi va Gender Integratsiyasi (Sprint v3.2)
 
 ## Context
-Product Owner (PO) has requested a comprehensive set of enhancements to the Dekanat portal (`frontend/src/app/dekanat/page.tsx`) and login logo (`frontend/src/app/login/page.tsx`):
-1. **Login Logo (`/login`)**: Enlarge to `h-28 sm:h-32 w-auto object-contain`, borderless, transparent, centered.
-2. **Notification Popover**: Add interactive `Bell` icon with unread badge (`3`) in the Dekanat header, opening a dropdown popover with "Bildirishnomalar Markazi", "Barchasini o'qilgan deb belgilash", and 4 real notifications with relative timestamps and category badges.
-3. **Full-Width Content Container**: Expand container from `max-w-6xl` to `max-w-7xl` / `w-full px-4 sm:px-6 lg:px-8` so tables use full viewport width.
-4. **Student Submenus & Filtering**: Restructure student submenus to:
-   - `Barcha Talabalar`
-   - `⚠️ Ustozsiz Talabalar`
-   - `🏢 Korxona Biriktiruvi`
-   - `📊 Kundalik & Davomat`
-   Add group filter pills (`[Barchasi]`, `[DI-202-22]`, `[DT-207-22]`, `[AI-101-23]`), multi-select checkboxes for bulk operations, and export button.
-5. **Optional Student Creation Modal**: Remove mandatory `*` for teacher and company in `isStudentModalOpen` modal. Provide default `-- Biriktirilmasin (Keyinroq biriktirish) --` and `-- Tanlanmasin (Keyinroq biriktirish) --` options.
-6. **Teachers Table View**: Add table view for "Kafedra Ustozlari" with columns for ID (`TC######`), name, degree/position, department, phone, academic workload progress bar (`3/8`), status, and "Ko'rish" modal trigger, with a toggle between Grid and Table views.
-7. **Partner Companies & New Partner Modal**: Enhance partner company catalog and add a **"+ Yangi Tashkilot Qo'shish"** modal supporting name, logo upload / initials badge, category, quota, TIN, address, contact person, and phone.
-8. **Verification**: Verify Next.js production build (`npm --prefix frontend run build`) and Pytest suite (`pytest backend/tests/ -v`).
+The Product Owner & QA Lead have requested a key extension to the Dekanat portal (`frontend/src/app/dekanat/page.tsx`):
+1. **Gender Integration**: Add `gender: 'ERKAK' | 'AYOL'` to all student records and display gender chips (`👨 Erkak` / `👩 Ayol`) in the student table, with filtering capability.
+2. **Academic Groups Hub (`activeTab === 'groups'`)**: Introduce a dedicated "Guruhlar Katalogi" tab with Bento cards calculating real-time statistics (total students, male/female count and percentages, assigned practice ratio, health status: Healthy/Warning/Critical), tutor details, bulk Telegram DM actions, ZIP archive triggers, and safe deletion rules.
+3. **Deep-Linking**: Clicking `[ 👥 {total} nafar Talabalar ]` on a group card navigates to the student tab pre-filtered by that group code.
+4. **Bulk Telegram DM**: Clicking `[ 💬 Guruhga Telegram DM ]` automatically selects all students in that group and opens the `@tiupm_bot` messaging modal.
 
+## Critical Files to Modify
+- `frontend/src/app/dekanat/page.tsx`
+
+## Implementation Steps
+1. **Update Interfaces**:
+   - Add `gender: 'ERKAK' | 'AYOL'` to `StudentItem`.
+   - Add `AcademicGroupItem` interface.
+2. **Add Academic Groups State**:
+   - Initialize `groups` state with sample groups (`DI-202-22`, `DI-201-22`, `AI-101-23`, etc.).
+   - Add state for group search, course filter, and group creation modal.
+3. **Implement Real-time Statistics Calculation & Health Status**:
+   - Compute metrics dynamically from `students` array.
+4. **Build "Guruhlar Katalogi" UI (`activeTab === 'groups'`)**:
+   - Header with search, course filter, and `[ + Yangi Guruh Yaratish ]` button.
+   - Bento Grid cards with Health badge, Tutor info, Gender demographics chip, Progress bar, and action buttons.
+5. **Enhance Student Table (`activeTab === 'students'`)**:
+   - Add Gender column with styled chips.
+   - Add Gender filter dropdown (`Barchasi`, `👨 Erkak`, `👩 Ayol`).
+   - Ensure deep-linking from group cards works seamlessly (`groupFilter` state).
+6. **Verification**:
+   - Run `npm --prefix frontend run build` to ensure zero type errors.
+
+## Verification Plan
+- Run `npm --prefix frontend run build` to verify TypeScript and Next.js compilation.

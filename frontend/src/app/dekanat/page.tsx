@@ -55,6 +55,7 @@ interface StudentItem {
   id: string;
   name: string;
   group: string;
+  gender: 'ERKAK' | 'AYOL';
   phone: string;
   teacher: string;
   company: string;
@@ -63,6 +64,18 @@ interface StudentItem {
   attendance: string;
   score: string;
   status: 'FAOL' | 'KUTILMOQDA' | 'YAKUNLANGAN';
+}
+
+interface AcademicGroupItem {
+  id: string;
+  code: string;
+  specialty: string;
+  course: number;
+  shift: 'Kunduzgi' | 'Kechki' | 'Masofaviy';
+  tutorName: string;
+  tutorPhone: string;
+  tutorTelegram?: string;
+  createdYear: string;
 }
 
 interface TeacherItem {
@@ -627,6 +640,7 @@ export default function DekanatDashboard() {
   const [newStudent, setNewStudent] = useState({
     name: '',
     group: 'DI-202-22',
+    gender: 'ERKAK' as 'ERKAK' | 'AYOL',
     phone: '+998 90 ',
     teacher: '',
     company: ''
@@ -692,6 +706,7 @@ export default function DekanatDashboard() {
       id: 'ST501824',
       name: 'Bekzod Ergashev',
       group: 'DI-202-22',
+      gender: 'ERKAK',
       phone: '+998 90 555 55 55',
       teacher: 'Dotsent Jamshid Karimov',
       company: 'Uzum Technologies MCHJ',
@@ -705,6 +720,7 @@ export default function DekanatDashboard() {
       id: 'ST501825',
       name: 'Sardor Rahimov',
       group: 'DI-202-22',
+      gender: 'ERKAK',
       phone: '+998 90 123 45 67',
       teacher: 'Dotsent Jamshid Karimov',
       company: 'Uzum Technologies MCHJ',
@@ -718,6 +734,7 @@ export default function DekanatDashboard() {
       id: 'ST501826',
       name: 'Madina Karimova',
       group: 'DI-202-22',
+      gender: 'AYOL',
       phone: '+998 90 234 56 78',
       teacher: 'Dotsent Jamshid Karimov',
       company: 'Uzum Technologies MCHJ',
@@ -731,6 +748,7 @@ export default function DekanatDashboard() {
       id: 'ST501827',
       name: 'Javohir Toshmatov',
       group: 'DI-201-22',
+      gender: 'ERKAK',
       phone: '+998 90 345 67 89',
       teacher: 'Professor Farhod Umarov',
       company: 'IT Park Uzbekistan',
@@ -744,6 +762,7 @@ export default function DekanatDashboard() {
       id: 'ST501828',
       name: 'Zarnigor Aliyeva',
       group: 'DI-201-22',
+      gender: 'AYOL',
       phone: '+998 90 456 78 90',
       teacher: 'Dotsent Aziz Nishonov',
       company: 'Click MCHJ',
@@ -757,12 +776,13 @@ export default function DekanatDashboard() {
       id: 'ST501829',
       name: 'Otabek Rustamov',
       group: 'DI-201-22',
+      gender: 'ERKAK',
       phone: '+998 90 678 12 34',
       teacher: 'Biriktirilmagan',
       company: 'IT Park Uzbekistan',
       mentor: 'Farrux Zokirov',
       contract: 'Kutilmoqda',
-      attendance: '38.0% (3/60 kun)', // Early warning candidate
+      attendance: '38.0% (3/60 kun)',
       score: 'Kutilmoqda',
       status: 'KUTILMOQDA'
     },
@@ -770,12 +790,13 @@ export default function DekanatDashboard() {
       id: 'ST501830',
       name: 'Nilufar Qosimova',
       group: 'AI-101-23',
+      gender: 'AYOL',
       phone: '+998 90 789 23 45',
       teacher: 'Biriktirilmagan',
       company: 'Aloqabank ATB',
       mentor: 'Kammuna Iriskulov',
       contract: 'Kutilmoqda',
-      attendance: '42.0% (4/60 kun)', // Early warning candidate
+      attendance: '42.0% (4/60 kun)',
       score: 'Kutilmoqda',
       status: 'KUTILMOQDA'
     },
@@ -783,6 +804,7 @@ export default function DekanatDashboard() {
       id: 'ST501831',
       name: 'Doniyor Yusupov',
       group: 'AI-101-23',
+      gender: 'ERKAK',
       phone: '+998 90 890 34 56',
       teacher: 'Katta o\'qituvchi Nilufar Saidova',
       company: 'Aloqabank ATB',
@@ -793,6 +815,57 @@ export default function DekanatDashboard() {
       status: 'FAOL'
     }
   ]);
+
+  // Academic Groups State
+  const [groups, setGroups] = useState<AcademicGroupItem[]>([
+    {
+      id: 'grp-1',
+      code: 'DI-202-22',
+      specialty: 'Dasturiy Injiniring',
+      course: 4,
+      shift: 'Kunduzgi',
+      tutorName: 'Jasur Aliyev',
+      tutorPhone: '+998 90 123 45 67',
+      tutorTelegram: '@jasur_aliyev',
+      createdYear: '2022-2026'
+    },
+    {
+      id: 'grp-2',
+      code: 'DI-201-22',
+      specialty: 'Dasturiy Injiniring',
+      course: 4,
+      shift: 'Kunduzgi',
+      tutorName: 'Dilshod Normatov',
+      tutorPhone: '+998 90 234 56 78',
+      tutorTelegram: '@dilshod_norm',
+      createdYear: '2022-2026'
+    },
+    {
+      id: 'grp-3',
+      code: 'AI-101-23',
+      specialty: 'Sun\'iy Intellekt va Ma\'lumotlar Ilmi',
+      course: 3,
+      shift: 'Kunduzgi',
+      tutorName: 'Nodira Vohidova',
+      tutorPhone: '+998 90 345 67 89',
+      tutorTelegram: '@nodira_v',
+      createdYear: '2023-2027'
+    }
+  ]);
+
+  const [groupSearchTerm, setGroupSearchTerm] = useState('');
+  const [courseFilter, setCourseFilter] = useState<'ALL' | '3' | '4'>('ALL');
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+  const [newGroup, setNewGroup] = useState({
+    code: '',
+    specialty: 'Dasturiy Injiniring',
+    course: 4,
+    shift: 'Kunduzgi' as const,
+    tutorName: '',
+    tutorPhone: '+998 90 ',
+    tutorTelegram: '',
+    createdYear: '2022-2026'
+  });
 
   // 3. Applications Database State
   const [applications, setApplications] = useState<ApplicationItem[]>([
@@ -1048,6 +1121,7 @@ export default function DekanatDashboard() {
       id: generatedLogin,
       name: newStudent.name.trim(),
       group: newStudent.group,
+      gender: newStudent.gender,
       phone: newStudent.phone,
       teacher: newStudent.teacher ? newStudent.teacher : 'Biriktirilmagan',
       company: newStudent.company ? newStudent.company : 'Biriktirilmagan',
@@ -1071,6 +1145,7 @@ export default function DekanatDashboard() {
     setNewStudent({
       name: '',
       group: 'DI-202-22',
+      gender: 'ERKAK', // Default gender
       phone: '+998 90 ',
       teacher: '',
       company: ''
@@ -1201,7 +1276,8 @@ export default function DekanatDashboard() {
           items={[
             { id: 'overview', label: t.navOverview, icon: LayoutDashboard },
             { id: 'students-list', label: t.navStudents, icon: GraduationCap, badge: String(students.length) },
-            { id: 'teachers', label: t.navTeachers, icon: BookOpen, badge: String(teachers.length) },
+            { id: 'groups', label: 'Guruhlar Katalogi', icon: BookOpen, badge: `${groups.length} ta` },
+            { id: 'teachers', label: t.navTeachers, icon: GraduationCap, badge: String(teachers.length) },
             { id: 'contracts-pending', label: t.navContracts, icon: FileText, badge: String(applications.filter(a => a.status === 'SUBMITTED').length) },
             { id: 'partners', label: t.navPartners, icon: Briefcase, badge: String(partners.length) },
             { id: 'settings', label: t.navSettings, icon: Settings },
