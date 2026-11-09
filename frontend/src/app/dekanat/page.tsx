@@ -3202,6 +3202,156 @@ export default function DekanatDashboard() {
         </div>
       )}
 
+      {/* 2.1 Academic Group Creation Modal */}
+      {isGroupModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+              <div className="flex items-center space-x-2">
+                <BookOpen className="w-5 h-5 text-blue-600" />
+                <h3 className="text-sm font-bold text-zinc-900">Yangi Akademik Guruh Qo'shish</h3>
+              </div>
+              <button onClick={() => setIsGroupModalOpen(false)} className="text-zinc-400 hover:text-zinc-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!newGroup.code.trim()) return;
+                const newGrpItem = {
+                  id: `grp-${Date.now()}`,
+                  code: newGroup.code.trim().toUpperCase(),
+                  specialty: newGroup.specialty.trim(),
+                  course: Number(newGroup.course),
+                  shift: newGroup.shift,
+                  tutorName: newGroup.tutorName.trim() || "Biriktirilmagan",
+                  tutorPhone: newGroup.tutorPhone.trim(),
+                  tutorTelegram: newGroup.tutorTelegram.trim(),
+                  createdYear: newGroup.createdYear
+                };
+                setGroups([...groups, newGrpItem as any]);
+                setIsGroupModalOpen(false);
+                setNewGroup({
+                  code: '',
+                  specialty: 'Dasturiy Injiniring',
+                  course: 4,
+                  shift: 'Kunduzgi',
+                  tutorName: '',
+                  tutorPhone: '+998 90 ',
+                  tutorTelegram: '',
+                  createdYear: '2022-2026'
+                });
+                setNotification(`Yangi akademik guruh ${newGrpItem.code} muvaffaqiyatli qo'shildi!`);
+                setTimeout(() => setNotification(null), 3000);
+              }}
+              className="space-y-3.5 text-xs"
+            >
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">Guruh Kodi (Masalan: DI-203-22):</label>
+                <input
+                  type="text"
+                  required
+                  value={newGroup.code}
+                  onChange={(e) => setNewGroup({ ...newGroup, code: e.target.value })}
+                  placeholder="DI-203-22"
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900 font-mono font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">Ta'lim Yo'nalishi / Mutaxassislik:</label>
+                <input
+                  type="text"
+                  required
+                  value={newGroup.specialty}
+                  onChange={(e) => setNewGroup({ ...newGroup, specialty: e.target.value })}
+                  placeholder="Dasturiy Injiniring"
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Kurs:</label>
+                  <select
+                    value={newGroup.course}
+                    onChange={(e) => setNewGroup({ ...newGroup, course: Number(e.target.value) as any })}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white"
+                  >
+                    <option value={3}>3-kurs</option>
+                    <option value={4}>4-kurs (Bitiruvchi)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Ta'lim Shakli:</label>
+                  <select
+                    value={newGroup.shift}
+                    onChange={(e) => setNewGroup({ ...newGroup, shift: e.target.value as any })}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white"
+                  >
+                    <option value="Kunduzgi">Kunduzgi</option>
+                    <option value="Kechki">Kechki</option>
+                    <option value="Masofaviy">Masofaviy</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">Guruh Tyutori F.I.SH:</label>
+                <input
+                  type="text"
+                  value={newGroup.tutorName}
+                  onChange={(e) => setNewGroup({ ...newGroup, tutorName: e.target.value })}
+                  placeholder="Masalan: Sardor Alimov"
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-200 focus:outline-none focus:border-zinc-900"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Tyutor Telefoni:</label>
+                  <input
+                    type="text"
+                    value={newGroup.tutorPhone}
+                    onChange={(e) => setNewGroup({ ...newGroup, tutorPhone: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Telegram (@username):</label>
+                  <input
+                    type="text"
+                    value={newGroup.tutorTelegram}
+                    onChange={(e) => setNewGroup({ ...newGroup, tutorTelegram: e.target.value })}
+                    placeholder="@username"
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-3 border-t border-zinc-100">
+                <button
+                  type="button"
+                  onClick={() => setIsGroupModalOpen(false)}
+                  className="px-4 py-2 text-xs text-zinc-600 hover:text-zinc-900"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-semibold hover:bg-zinc-800"
+                >
+                  Guruhni Yaratish
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* 3. New Partner Company Modal */}
       {isPartnerModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
