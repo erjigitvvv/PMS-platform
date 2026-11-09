@@ -1652,7 +1652,6 @@ export default function DekanatDashboard() {
                       ))}
                     </div>
                   </div>
-                </div>
 
                 {/* Students Table */}
                 <div className="overflow-x-auto border border-zinc-200 rounded-xl">
