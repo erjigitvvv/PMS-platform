@@ -26,7 +26,8 @@ import {
   BookOpen,
   XCircle,
   FileCheck,
-  LayoutDashboard
+  LayoutDashboard,
+  MapPin
 } from 'lucide-react';
 import CollapsibleSidebar, { NavItem } from '@/components/CollapsibleSidebar';
 
@@ -55,7 +56,16 @@ export default function StudentDashboard() {
   const [notification, setNotification] = useState<string | null>(null);
 
   // Custom company state
-  const [customCompany, setCustomCompany] = useState({ name: '', tin: '', director: '', phone: '' });
+  const [customCompany, setCustomCompany] = useState({ 
+    name: '', 
+    tin: '', 
+    director: '', 
+    phone: '', 
+    address: '', 
+    reason: '', 
+    isOfficeConfirmed: false 
+  });
+  const [selectedPartnerCompany, setSelectedPartnerCompany] = useState<any | null>(null);
   const [applicationSubmitted, setApplicationSubmitted] = useState(false);
 
   // Logbook history
@@ -291,110 +301,317 @@ export default function StudentDashboard() {
             </div>
           )}
 
-          {/* TAB 2: VACANCIES */}
-          {activeTab === 'vacancies' && (
+          {/* TAB 2: VACANCIES & 3D FOLDER POCKET CATALOG */}
+          {activeTab === "vacancies" && (
             <div className="space-y-6">
               <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm space-y-6">
-                <div>
-                  <h3 className="text-sm font-bold text-zinc-900">Hamkor Korxonalar Vakansiyalari</h3>
-                  <p className="text-xs text-zinc-500 mt-1">OTM bilan 3 tomonlama rasmiy shartnomaga ega hamkor kompaniyalar</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Vacancy 1 */}
-                  <div className="border border-zinc-200/80 rounded-2xl p-5 hover:border-zinc-300 transition-all space-y-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
-                          Hamkor Korxona
-                        </span>
-                        <h4 className="text-sm font-bold text-zinc-900 mt-2">Junior Backend Developer</h4>
-                        <p className="text-xs text-zinc-600 font-medium">Uzum Technologies MCHJ</p>
-                      </div>
-                      <div className="w-10 h-10 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-center font-bold text-zinc-700 text-xs">
-                        UZUM
-                      </div>
-                    </div>
-                    <p className="text-xs text-zinc-500">Python, FastAPI, PostgreSQL va Git bilan ishlash ko'nikmalari talab qilinadi.</p>
-                    <div className="flex items-center justify-between pt-2 border-t border-zinc-100 text-xs">
-                      <span className="text-zinc-400 font-mono">Kvota: 3 / 5 o'rin</span>
-                      <span className="text-emerald-700 font-semibold">Ariza qabul qilingan</span>
-                    </div>
-                  </div>
-
-                  {/* Vacancy 2 */}
-                  <div className="border border-zinc-200/80 rounded-2xl p-5 hover:border-zinc-300 transition-all space-y-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
-                          Hamkor Korxona
-                        </span>
-                        <h4 className="text-sm font-bold text-zinc-900 mt-2">Frontend Developer intern</h4>
-                        <p className="text-xs text-zinc-600 font-medium">IT Park Uzbekistan</p>
-                      </div>
-                      <div className="w-10 h-10 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-center font-bold text-zinc-700 text-xs">
-                        ITP
-                      </div>
-                    </div>
-                    <p className="text-xs text-zinc-500">React, Next.js, Tailwind CSS va zamonaviy veb texnologiyalari.</p>
-                    <div className="flex items-center justify-between pt-2 border-t border-zinc-100 text-xs">
-                      <span className="text-zinc-400 font-mono">Kvota: 5 / 8 o'rin</span>
-                      <button className="text-zinc-900 font-medium hover:underline">Ariza topshirish →</button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Custom Company Option */}
-                <div className="pt-6 border-t border-zinc-100">
-                  <h4 className="text-xs font-bold text-zinc-900 mb-1">O'z Korxonangizni Kiritish (Individual tanlov)</h4>
-                  <p className="text-xs text-zinc-500 mb-4">Agar boshqa kompaniyada amaliyot o'tamoqchi bo'lsangiz, rekvizitlarini kiriting:</p>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl">
-                    <input 
-                      type="text" 
-                      placeholder="Korxona to'liq nomi" 
-                      value={customCompany.name}
-                      onChange={(e) => setCustomCompany({ ...customCompany, name: e.target.value })}
-                      className="px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-white"
-                    />
-                    <input 
-                      type="text" 
-                      placeholder="STIR / INN (9 xonali)" 
-                      value={customCompany.tin}
-                      onChange={(e) => setCustomCompany({ ...customCompany, tin: e.target.value })}
-                      className="px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-white font-mono"
-                    />
-                    <input 
-                      type="text" 
-                      placeholder="Rahbar F.I.SH" 
-                      value={customCompany.director}
-                      onChange={(e) => setCustomCompany({ ...customCompany, director: e.target.value })}
-                      className="px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-white"
-                    />
-                    <input 
-                      type="text" 
-                      placeholder="Telefon raqami" 
-                      value={customCompany.phone}
-                      onChange={(e) => setCustomCompany({ ...customCompany, phone: e.target.value })}
-                      className="px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-white"
-                    />
-                  </div>
-                  <button 
-                    onClick={() => {
-                      setApplicationSubmitted(true);
-                      setTimeout(() => setApplicationSubmitted(false), 4000);
-                    }}
-                    className="mt-3 px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-all shadow-sm"
-                  >
-                    Dekanatga Tasdiqlash Uchun Yuborish
-                  </button>
-
-                  {applicationSubmitted && (
-                    <p className="text-xs text-emerald-600 mt-2 font-medium flex items-center">
-                      <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 shrink-0" />
-                      <span>Individual korxona arizasi dekanatga yuborildi!</span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-zinc-100 gap-2">
+                  <div>
+                    <h3 className="text-sm font-bold text-zinc-900">Hamkor Tashkilotlar 3D Katalogi</h3>
+                    <p className="text-xs text-zinc-500 mt-0.5">
+                      OTM bilan 3 tomonlama rasmiy shartnomaga ega kompaniyalar • Qat'iy talab: 🏢 Faqat ofisda (masofaviy taqiqlanadi)
                     </p>
-                  )}
+                  </div>
+                  <span className="text-[11px] font-bold text-purple-700 bg-purple-50 px-3 py-1 rounded-xl border border-purple-200">
+                    3D Folder Pocket
+                  </span>
+                </div>
+
+                {/* 3D Folder Pocket Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {[
+                    {
+                      id: "uzum",
+                      name: "Uzum Technologies MCHJ",
+                      category: "Fintech & E-Commerce",
+                      address: "Toshkent sh., Yashnobod t., Farg'ona yo'li 12",
+                      quota: 5,
+                      occupied: 3,
+                      tin: "309876541",
+                      director: "Jasur Boboyev",
+                      phone: "+998 78 777 07 07",
+                      desc: "Python, FastAPI, React va zamonaviy servislar bilan ishlash.",
+                      logoText: "UZUM",
+                      bg: "bg-purple-600",
+                      badge: "Bo'sh 2 ta o'rin"
+                    },
+                    {
+                      id: "itpark",
+                      name: "IT Park Uzbekistan",
+                      category: "IT Hub & Incubator",
+                      address: "Toshkent sh., Mirzo Ulug'bek t., Tepamasjid 4",
+                      quota: 8,
+                      occupied: 5,
+                      tin: "306541289",
+                      director: "Farhod Ibragimov",
+                      phone: "+998 71 209 11 99",
+                      desc: "Full-stack loyihalar, Startap inkubatsiya va Web dasturlash.",
+                      logoText: "ITP",
+                      bg: "bg-indigo-600",
+                      badge: "Bo'sh 3 ta o'rin"
+                    },
+                    {
+                      id: "click",
+                      name: "Click MCHJ",
+                      category: "To'lov Tizimi",
+                      address: "Toshkent sh., Shayxontohur t., Navoiy 18",
+                      quota: 4,
+                      occupied: 2,
+                      tin: "302345890",
+                      director: "Ulug'bek Rustamov",
+                      phone: "+998 71 231 08 80",
+                      desc: "Mikroservislar arxitekturasi, yuqori yuklamali to'lov modullari.",
+                      logoText: "CLICK",
+                      bg: "bg-blue-600",
+                      badge: "Bo'sh 2 ta o'rin"
+                    }
+                  ].map((comp) => (
+                    <div
+                      key={comp.id}
+                      onClick={() => setSelectedPartnerCompany(comp)}
+                      className="relative h-52 rounded-3xl overflow-hidden cursor-pointer group shadow-md hover:shadow-xl
+                                 bg-gradient-to-br from-purple-700 via-indigo-700 to-indigo-900 transition-all duration-300
+                                 hover:-translate-y-1 folder-pocket border border-purple-500/30 flex flex-col justify-between p-5"
+                    >
+                      {/* Top section: Logo, Name, Badges */}
+                      <div className="z-10 space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md text-white font-extrabold flex items-center justify-center text-xs shadow-md border border-white/30">
+                            {comp.logoText}
+                          </div>
+                          <span className="px-2.5 py-0.5 bg-emerald-400 text-emerald-950 font-bold text-[10px] rounded-full shadow-xs">
+                            {comp.badge}
+                          </span>
+                        </div>
+
+                        <div>
+                          <h4 className="text-sm font-bold text-white tracking-tight group-hover:text-purple-100 transition-colors">
+                            {comp.name}
+                          </h4>
+                          <p className="text-[11px] text-purple-200 mt-0.5">{comp.category}</p>
+                        </div>
+                      </div>
+
+                      {/* Middle: Office-Only Badge */}
+                      <div className="z-10 flex items-center justify-between text-[11px] text-white/90 pt-1">
+                        <span className="inline-flex items-center space-x-1 bg-white/15 px-2 py-0.5 rounded-lg border border-white/20">
+                          <span>🏢 Faqat Ofisda</span>
+                        </span>
+                        <span className="font-mono text-xs font-semibold">
+                          {comp.occupied}/{comp.quota} kvota
+                        </span>
+                      </div>
+
+                      {/* White Pocket Overlay Effect (Folder Pocket) */}
+                      <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xs rounded-t-2xl p-4 pt-3.5 shadow-lg border-t border-purple-200/60 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                        <div className="flex items-center text-[10px] text-zinc-500 space-x-1 truncate">
+                          <MapPin className="w-3 h-3 text-purple-600 shrink-0" />
+                          <span className="truncate">{comp.address}</span>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-purple-700">Tafsilot &amp; Ariza</span>
+                          <span className="text-xs text-zinc-400 group-hover:text-zinc-900 group-hover:translate-x-1 transition-all">&rarr;</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Custom Company Option with Personal Justification & In-Office Commitment */}
+                <div className="pt-6 border-t border-zinc-100 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
+                        O'z Korxonangizni Kiritish (Individual tanlov arizasi)
+                      </h4>
+                      <p className="text-xs text-zinc-500 mt-0.5">
+                        Agar ro'yxatda bo'lmagan mustaqil korxonada amaliyot o'tamoqchi bo'lsangiz, rekvizitlar va asoslantirilgan izoh bilan Dekanatga ariza yuboring.
+                      </p>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 text-[10px] font-bold border border-amber-200">
+                      Dekanat Tasdig'i Talab Etiladi
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-2xl bg-zinc-50/70 border border-zinc-200">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-zinc-700 mb-1">Korxona To'liq Nomi:</label>
+                      <input 
+                        type="text" 
+                        placeholder="Masalan: 'Techno Soft Solutions' MCHJ" 
+                        value={customCompany.name}
+                        onChange={(e) => setCustomCompany({ ...customCompany, name: e.target.value })}
+                        className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-white focus:outline-none focus:border-zinc-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-zinc-700 mb-1">STIR / INN (9 xonali raqam):</label>
+                      <input 
+                        type="text" 
+                        placeholder="301234567" 
+                        value={customCompany.tin}
+                        onChange={(e) => setCustomCompany({ ...customCompany, tin: e.target.value })}
+                        className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-white font-mono focus:outline-none focus:border-zinc-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-zinc-700 mb-1">Korxona Rahbari F.I.SH:</label>
+                      <input 
+                        type="text" 
+                        placeholder="Masalan: Alimov Sardor Karimovich" 
+                        value={customCompany.director}
+                        onChange={(e) => setCustomCompany({ ...customCompany, director: e.target.value })}
+                        className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-white focus:outline-none focus:border-zinc-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-zinc-700 mb-1">Korxona / Rahbar Telefon Raqami:</label>
+                      <input 
+                        type="text" 
+                        placeholder="+998 90 123 45 67" 
+                        value={customCompany.phone}
+                        onChange={(e) => setCustomCompany({ ...customCompany, phone: e.target.value })}
+                        className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-white focus:outline-none focus:border-zinc-900"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-[11px] font-semibold text-zinc-700 mb-1">Korxona Yuridik Manzili:</label>
+                      <input 
+                        type="text" 
+                        placeholder="Toshkent sh., Yunusobod t., Amir Temur ko'chasi 45-uy" 
+                        value={customCompany.address}
+                        onChange={(e) => setCustomCompany({ ...customCompany, address: e.target.value })}
+                        className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 bg-white focus:outline-none focus:border-zinc-900"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
+                        Nima uchun ushbu korxona tanlandi va qanday amaliyot o'tamoqchisiz? (Asoslantirilgan izoh):
+                      </label>
+                      <textarea
+                        rows={3}
+                        placeholder="Ushbu kompaniyada qanday vazifalar bajarmoqchisiz va bu sizning mutaxassisligingizga qanday mos keladi?..."
+                        value={customCompany.reason}
+                        onChange={(e) => setCustomCompany({ ...customCompany, reason: e.target.value })}
+                        className="w-full p-3 text-xs rounded-xl border border-zinc-200 bg-white placeholder-zinc-400 focus:outline-none focus:border-zinc-900"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2 pt-1">
+                      <label className="flex items-start space-x-2.5 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={customCompany.isOfficeConfirmed}
+                          onChange={(e) => setCustomCompany({ ...customCompany, isOfficeConfirmed: e.target.checked })}
+                          className="mt-0.5 rounded border-zinc-300 text-purple-600 focus:ring-purple-500"
+                        />
+                        <span className="text-xs text-zinc-700">
+                          <b>Qat'iy Talab:</b> Amaliyot masofaviy (online) emas, haftasiga 5 kun korxona ofisida bevosita o'talishini tasdiqlayman.
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    <button 
+                      onClick={() => {
+                        if (!customCompany.name.trim() || !customCompany.tin.trim() || !customCompany.reason.trim()) {
+                          setNotification("⚠️ Iltimos, korxona nomi, STIR va asoslantirilgan izohni to'liq kiriting!");
+                          setTimeout(() => setNotification(null), 3500);
+                          return;
+                        }
+                        if (!customCompany.isOfficeConfirmed) {
+                          setNotification("⚠️ Amaliyot faqat ofisda o'talishi shartiga rozilik bildirishingiz kerak!");
+                          setTimeout(() => setNotification(null), 3500);
+                          return;
+                        }
+                        setApplicationSubmitted(true);
+                        setNotification("Individual korxona arizasi dekanat ko'rib chiqishi uchun muvaffaqiyatli yuborildi!");
+                        setTimeout(() => {
+                          setApplicationSubmitted(false);
+                          setNotification(null);
+                        }, 5000);
+                      }}
+                      className="px-5 py-2.5 bg-zinc-900 text-white rounded-xl text-xs font-semibold hover:bg-zinc-800 transition-all shadow-sm"
+                    >
+                      Dekanatga Tasdiqlash Uchun Yuborish
+                    </button>
+
+                    {applicationSubmitted && (
+                      <span className="text-xs text-emerald-700 font-semibold flex items-center bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
+                        <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                        <span>Ariza dekanatga yuborildi (Kutilmoqda)</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal for viewing partner company details */}
+          {selectedPartnerCompany && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
+              <div className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl">
+                <div className="h-2 w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600" />
+                <div className="p-6 space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold">
+                        {selectedPartnerCompany.category}
+                      </span>
+                      <h3 className="text-base font-bold text-zinc-900 mt-1">{selectedPartnerCompany.name}</h3>
+                      <p className="text-xs text-zinc-500 flex items-center mt-0.5">
+                        <MapPin className="w-3 h-3 mr-1 text-zinc-400" />
+                        <span>{selectedPartnerCompany.address}</span>
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setSelectedPartnerCompany(null)}
+                      className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-xl"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/70 text-xs space-y-2">
+                    <p className="text-zinc-700">{selectedPartnerCompany.desc}</p>
+                    <div className="pt-2 border-t border-zinc-200 grid grid-cols-2 gap-2 text-zinc-600">
+                      <div><b>STIR (INN):</b> <span className="font-mono">{selectedPartnerCompany.tin}</span></div>
+                      <div><b>Rahbar:</b> {selectedPartnerCompany.director}</div>
+                      <div><b>Telefon:</b> <span className="font-mono">{selectedPartnerCompany.phone}</span></div>
+                      <div><b>Kvota:</b> <span className="font-semibold text-emerald-700">{selectedPartnerCompany.occupied}/{selectedPartnerCompany.quota} band</span></div>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-purple-50/70 border border-purple-200 text-xs text-purple-900 flex items-center space-x-2">
+                    <span>🏢</span>
+                    <span>Ushbu korxonada amaliyot to'liq ofis formatida o'taladi (dushanba-juma).</span>
+                  </div>
+
+                  <div className="flex justify-end space-x-2 pt-2 border-t border-zinc-100">
+                    <button
+                      onClick={() => setSelectedPartnerCompany(null)}
+                      className="px-4 py-2 text-xs text-zinc-600 hover:text-zinc-900"
+                    >
+                      Yopish
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedPartnerCompany(null);
+                        setNotification(`${selectedPartnerCompany.name} korxonasiga amaliyot arizangiz muvaffaqiyatli topshirildi!`);
+                        setTimeout(() => setNotification(null), 3500);
+                      }}
+                      className="px-4 py-2 bg-purple-700 text-white rounded-xl text-xs font-semibold hover:bg-purple-800 transition-all shadow-xs"
+                    >
+                      Arizani Tasdiqlash
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

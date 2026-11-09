@@ -43,7 +43,11 @@ import {
   RefreshCw,
   Globe,
   BookUser, // Added for Assign Teacher action
-  Send // Added for Telegram Message action
+  Send, // Added for Telegram Message action
+  Pencil,
+  Eye,
+  Camera,
+  MessageSquare
 } from 'lucide-react';
 import CollapsibleSidebar, { NavItem } from '@/components/CollapsibleSidebar';
 
@@ -546,6 +550,9 @@ export default function DekanatDashboard() {
 
   // Student Dossier Editing State
   const [editedStudent, setEditedStudent] = useState<StudentItem | null>(null);
+  const [isEditingDossier, setIsEditingDossier] = useState(false);
+  const [selectedHeatmapDay, setSelectedHeatmapDay] = useState<number>(18);
+  const [heatmapPhotoModal, setHeatmapPhotoModal] = useState<{ day: number; date: string; task: string; score: string; mentor: string; photoUrl: string } | null>(null);
   const [tempDigits, setTempDigits] = useState('204581');
   const [facultyName, setFacultyName] = useState('Axborot Texnologiyalari Fakulteti');
   const [deanName, setDeanName] = useState('Alisher Qodirov');
@@ -1637,37 +1644,18 @@ export default function DekanatDashboard() {
                             </div>
                           </td>
                           <td className="p-3 text-right">
-                            <div className="inline-flex items-center space-x-1 bg-zinc-50 border border-zinc-200/80 p-1 rounded-xl shadow-2xs">
+                            <div className="inline-flex items-center space-x-1.5 bg-zinc-50 border border-zinc-200/80 p-1 rounded-xl shadow-2xs">
                               <button
                                 onClick={() => {
                                   setSelectedStudent(st);
                                   setEditedStudent({ ...st });
-                                  setIsStudentModalOpen(true);
+                                  setIsEditingDossier(false);
                                 }}
-                                className="p-1.5 text-zinc-600 hover:text-zinc-900 hover:bg-white rounded-lg transition-all"
-                                title="Talaba dossierini ko'rish"
+                                className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50/80 hover:bg-blue-100 hover:text-blue-800 rounded-lg transition-all"
+                                title="Talaba dosyesini ko'rish va boshqarish"
                               >
-                                <Search className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setNotification(`Talaba ${st.name} uchun uch tomonlama yo'llanma PDF generatsiya qilindi!`);
-                                  setTimeout(() => setNotification(null), 3000);
-                                }}
-                                className="p-1.5 text-blue-600 hover:text-blue-700 hover:bg-white rounded-lg transition-all"
-                                title="Yo'llanma xatini yuklab olish"
-                              >
-                                <FileText className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setTelegramTargetStudent(st);
-                                  setIsTelegramModalOpen(true);
-                                }}
-                                className="p-1.5 text-sky-600 hover:text-sky-700 hover:bg-white rounded-lg transition-all"
-                                title="Talabaga @tiupm_bot orqali xabar yuborish"
-                              >
-                                <Send className="w-3.5 h-3.5" />
+                                <Eye className="w-3.5 h-3.5" />
+                                <span>Ko'rish / Dosye</span>
                               </button>
                               <button
                                 onClick={() => {
@@ -1678,17 +1666,6 @@ export default function DekanatDashboard() {
                                 title="Talabani tizimdan o'chirish"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setSelectedStudent(st);
-                                  setEditedStudent({ ...st });
-                                  setIsStudentModalOpen(true);
-                                }}
-                                className="p-1.5 text-amber-600 hover:text-amber-700 hover:bg-white rounded-lg transition-all"
-                                title="Tahrirlash / Ustoz biriktirish"
-                              >
-                                <Settings className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           </td>
@@ -3131,43 +3108,216 @@ export default function DekanatDashboard() {
         </div>
       )}
 
-      {/* 5. Student Dossier Modal with Tabbed Interface & Gradient Top Line */}
+      {/* 5. Student Dossier Modal with 360° Action Toolbar & 30-Day GitHub Heatmap */}
       {selectedStudent && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl max-w-xl w-full overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4">
+            <div className="bg-white rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92vh]">
               {/* Gradient Top Line */}
               <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-blue-500 to-emerald-500" />
 
-              {/* Modal Header */}
-              <div className="px-6 pt-5 pb-3 flex items-center justify-between border-b border-zinc-100">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                    <GraduationCap className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <h3 className="text-sm font-bold text-zinc-900">{selectedStudent.name}</h3>
-                      <span className="font-mono text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60 font-bold">
-                        {selectedStudent.id}
-                      </span>
+              {/* Modal Header & 360° Action Toolbar */}
+              <div className="px-6 pt-5 pb-4 border-b border-zinc-100 bg-white">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center space-x-3.5">
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-500/20 shrink-0">
+                      <GraduationCap className="w-6 h-6" />
                     </div>
-                    <p className="text-xs text-zinc-500 mt-0.5">{selectedStudent.group} • {selectedStudent.company}</p>
+                    <div>
+                      <div className="flex items-center space-x-2 flex-wrap">
+                        <h3 className="text-base font-bold text-zinc-900">{selectedStudent.name}</h3>
+                        <span className="font-mono text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60 font-bold">
+                          {selectedStudent.id}
+                        </span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          selectedStudent.status === 'FAOL' 
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                            : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        }`}>
+                          {selectedStudent.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-zinc-500 mt-0.5">
+                        {selectedStudent.group} • {selectedStudent.company} • Kafedra Ustozi: <b className="text-zinc-700">{selectedStudent.teacher || "Biriktirilmagan"}</b>
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSelectedStudent(null);
+                      setIsEditingDossier(false);
+                    }}
+                    className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-xl transition-all duration-200 hover:rotate-90"
+                    title="Yopish"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* 360° Quick Action Toolbar */}
+                <div className="mt-3.5 pt-3 border-t border-zinc-100 flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => setIsEditingDossier(!isEditingDossier)}
+                      className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                        isEditingDossier
+                          ? 'bg-amber-500 text-white shadow-sm ring-2 ring-amber-300'
+                          : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+                      }`}
+                      title="Talaba ma'lumotlarini tahrirlash"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      <span>{isEditingDossier ? "Tahrirni Bekor Qilish" : "Tahrirlash"}</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setTelegramTargetStudent(selectedStudent);
+                        setIsTelegramModalOpen(true);
+                      }}
+                      className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200/60 transition-all shadow-2xs"
+                      title="Talabaga @tiupm_bot orqali xabar yuborish"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Telegram DM</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        if (selectedStudent.contract === 'Kutilmoqda') {
+                          setNotification(`⚠️ Ogohlantirish: ${selectedStudent.name} shartnomasi hali tasdiqlanmagan. Yo'llanma xati faqat tasdiqlangan shartnoma bilan rasmiylashtiriladi!`);
+                        } else {
+                          setNotification(`Talaba ${selectedStudent.name} uchun uch tomonlama rasmiy yo'llanma xati (PDF) muvaffaqiyatli yuklab olindi!`);
+                        }
+                        setTimeout(() => setNotification(null), 3500);
+                      }}
+                      className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200/60 transition-all shadow-2xs"
+                      title="Rasmiy yo'llanma xatini (PDF) yuklab olish"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      <span>Yo'llanma Xati (PDF)</span>
+                    </button>
+                  </div>
+
+                  <div className="text-[11px] text-zinc-500 font-mono flex items-center space-x-1 bg-zinc-50 px-2.5 py-1 rounded-lg border border-zinc-200/60">
+                    <Phone className="w-3 h-3 text-zinc-400" />
+                    <span>{selectedStudent.phone}</span>
                   </div>
                 </div>
-                <button
-                  onClick={() => setSelectedStudent(null)}
-                  className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-xl transition-all duration-200 hover:rotate-90"
-                  title="Yopish"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+
+                {/* In-Modal Inline Edit Drawer */}
+                {isEditingDossier && editedStudent && (
+                  <div className="mt-3 p-4 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-3 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold text-amber-900 flex items-center space-x-1.5">
+                        <Pencil className="w-3.5 h-3.5 text-amber-700" />
+                        <span>Talaba Dosyesini Tahrirlash & Ustoz Biriktirish</span>
+                      </h4>
+                      <span className="text-[10px] text-amber-700 font-mono">ID: {editedStudent.id}</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-700 mb-0.5">F.I.SH:</label>
+                        <input
+                          type="text"
+                          value={editedStudent.name}
+                          onChange={(e) => setEditedStudent({ ...editedStudent, name: e.target.value })}
+                          className="w-full px-3 py-1.5 text-xs rounded-xl border border-zinc-300 bg-white focus:outline-none focus:border-zinc-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-700 mb-0.5">Akademik Guruh:</label>
+                        <input
+                          type="text"
+                          value={editedStudent.group}
+                          onChange={(e) => setEditedStudent({ ...editedStudent, group: e.target.value })}
+                          className="w-full px-3 py-1.5 text-xs rounded-xl border border-zinc-300 bg-white focus:outline-none focus:border-zinc-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-700 mb-0.5">Telefon:</label>
+                        <input
+                          type="text"
+                          value={editedStudent.phone}
+                          onChange={(e) => setEditedStudent({ ...editedStudent, phone: e.target.value })}
+                          className="w-full px-3 py-1.5 text-xs rounded-xl border border-zinc-300 bg-white font-mono focus:outline-none focus:border-zinc-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-700 mb-0.5">Amaliyot Korxonasi:</label>
+                        <input
+                          type="text"
+                          value={editedStudent.company}
+                          onChange={(e) => setEditedStudent({ ...editedStudent, company: e.target.value })}
+                          className="w-full px-3 py-1.5 text-xs rounded-xl border border-zinc-300 bg-white focus:outline-none focus:border-zinc-900"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-[11px] font-semibold text-zinc-700 mb-0.5">
+                          Kafedra Ilmiy Ustozi (Qat'iy 3/3 talaba limiti nazorati):
+                        </label>
+                        <select
+                          value={editedStudent.teacher}
+                          onChange={(e) => setEditedStudent({ ...editedStudent, teacher: e.target.value })}
+                          className="w-full px-3 py-1.5 text-xs rounded-xl border border-zinc-300 bg-white focus:outline-none focus:border-zinc-900"
+                        >
+                          <option value="">-- Ustozni tanlang --</option>
+                          {teachers.map(tc => {
+                            const count = students.filter(s => s.teacher === tc.name && s.id !== editedStudent.id).length;
+                            const isFull = count >= 3 && editedStudent.teacher !== tc.name;
+                            return (
+                              <option key={tc.id} value={tc.name} disabled={isFull}>
+                                {tc.name} ({count}/3 nafar {isFull ? "- To'lgan (3/3)" : "biriktirilgan"})
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end space-x-2 pt-2 border-t border-amber-200">
+                      <button
+                        onClick={() => {
+                          setEditedStudent({ ...selectedStudent });
+                          setIsEditingDossier(false);
+                        }}
+                        className="px-3.5 py-1.5 text-xs text-zinc-600 hover:text-zinc-900 rounded-xl"
+                      >
+                        Bekor qilish
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (!editedStudent.name.trim()) {
+                            setNotification("⚠️ Talaba F.I.SH bo'sh bo'lishi mumkin emas!");
+                            setTimeout(() => setNotification(null), 3000);
+                            return;
+                          }
+                          const teacherLoad = students.filter(s => s.teacher === editedStudent.teacher && s.id !== editedStudent.id).length;
+                          if (editedStudent.teacher && teacherLoad >= 3) {
+                            setNotification("⚠️ Xatolik: Tanlangan ustozning 3/3 kvotasi to'lgan!");
+                            setTimeout(() => setNotification(null), 3000);
+                            return;
+                          }
+                          setStudents(students.map(s => s.id === editedStudent.id ? editedStudent : s));
+                          setSelectedStudent(editedStudent);
+                          setIsEditingDossier(false);
+                          setNotification("Talaba ma'lumotlari muvaffaqiyatli yangilandi va saqlandi!");
+                          setTimeout(() => setNotification(null), 3000);
+                        }}
+                        className="px-4 py-1.5 text-xs font-semibold bg-zinc-900 text-white hover:bg-zinc-800 rounded-xl shadow-xs"
+                      >
+                        Saqlash
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* 3-Tab Navigation */}
               <div className="flex px-6 border-b border-zinc-100 bg-zinc-50/50 gap-2 pt-2">
                 {[
                   { id: 'docs', label: '1. Hujjatlar & Shartnoma', icon: FileText },
-                  { id: 'attendance', label: '2. Davomat & Fotohisobot', icon: CalendarCheck },
+                  { id: 'attendance', label: '2. 30 Kunlik Heatmap & Fotohisobot', icon: CalendarCheck },
                   { id: 'grades', label: '3. ECTS Ballar & Ustoz', icon: Award },
                 ].map(tab => {
                   const TabIcon = tab.icon;
@@ -3233,39 +3383,154 @@ export default function DekanatDashboard() {
                   </div>
                 )}
 
-                {/* TAB 2: ATTENDANCE & PHOTO LOGS */}
+                {/* TAB 2: 30-DAY GITHUB-STYLE CONTRIBUTIONS HEATMAP */}
                 {activeDossierTab === 'attendance' && (
                   <div className="space-y-4 animate-in fade-in duration-200">
                     <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-200 flex items-center justify-between">
                       <div>
-                        <span className="text-xs text-zinc-500 block">Umumiy Davomat Ko'rsatkichi</span>
-                        <span className="text-xl font-bold text-zinc-900">{selectedStudent.attendance}</span>
+                        <span className="text-xs text-zinc-500 block">Umumiy Davomat Ko'rsatkichi (30 kunlik reja)</span>
+                        <div className="flex items-center space-x-2 mt-0.5">
+                          <span className="text-xl font-bold text-zinc-900">{selectedStudent.attendance}</span>
+                          <span className="text-xs font-mono text-zinc-500">(18 kun bajarildi / 12 kun qoldi)</span>
+                        </div>
                       </div>
                       <span className="px-3 py-1 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-xl">
                         A'lo daraja
                       </span>
                     </div>
 
-                    <h4 className="text-xs font-bold text-zinc-900 uppercase tracking-wider">Kunlik Fotohisobotlar Logi</h4>
-                    <div className="space-y-2.5">
-                      {[
-                        { day: '4/30-kun', date: '02.11.2026', title: 'Docker va API integratsiya', photo: true, score: '⭐⭐⭐⭐⭐ 5' },
-                        { day: '3/30-kun', date: '31.10.2026', title: 'Frontend Tailwind CSS komponentlari', photo: true, score: '⭐⭐⭐⭐⭐ 5' },
-                        { day: '2/30-kun', date: '30.10.2026', title: 'Git branching va pull request', photo: false, score: '⭐⭐⭐⭐ 4' },
-                      ].map((log, idx) => (
-                        <div key={idx} className="p-3 rounded-xl border border-zinc-200 bg-white space-y-1.5">
-                          <div className="flex justify-between items-center text-xs">
-                            <span className="font-bold text-blue-700 font-mono">{log.day} ({log.date})</span>
-                            <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold">🟢 Qabul qilingan</span>
-                          </div>
-                          <p className="text-xs text-zinc-800 font-medium">{log.title}</p>
-                          <div className="flex justify-between items-center pt-1 border-t border-zinc-100 text-[11px]">
-                            <span className="text-zinc-500">Mentor Bahosi: <b className="text-zinc-900">{log.score}</b></span>
-                            {log.photo && <span className="text-blue-600 font-medium cursor-pointer hover:underline">📸 Fotoni ko'rish</span>}
-                          </div>
+                    {/* GitHub-Style 30-Day Contribution Heatmap Grid */}
+                    <div className="p-4 rounded-2xl bg-zinc-900 text-white space-y-3 shadow-inner">
+                      <div className="flex items-center justify-between text-xs pb-1 border-b border-zinc-800">
+                        <div className="flex items-center space-x-2">
+                          <CalendarCheck className="w-4 h-4 text-emerald-400" />
+                          <span className="font-bold text-zinc-100">30 Kunlik Contributions Heatmap</span>
                         </div>
-                      ))}
+                        <span className="text-[11px] text-zinc-400">Katakchani bosib hisobotni tekshiring</span>
+                      </div>
+
+                      {/* 30-Cell Grid: 10 columns x 3 rows */}
+                      <div className="grid grid-cols-6 sm:grid-cols-10 gap-2 pt-1">
+                        {Array.from({ length: 30 }, (_, i) => {
+                          const dayNum = i + 1;
+                          const isDone = dayNum <= 18;
+                          const isPending = dayNum === 19;
+                          const isSelected = selectedHeatmapDay === dayNum;
+
+                          let cellBg = "bg-zinc-800 border-zinc-700/60 text-zinc-500 hover:border-zinc-500";
+                          if (isDone) {
+                            cellBg = dayNum % 5 === 0 
+                              ? "bg-emerald-600 border-emerald-500 text-white hover:bg-emerald-500 shadow-xs shadow-emerald-500/20" 
+                              : "bg-emerald-500 border-emerald-400 text-white hover:bg-emerald-400 shadow-xs shadow-emerald-500/30";
+                          } else if (isPending) {
+                            cellBg = "bg-amber-400 border-amber-300 text-zinc-900 hover:bg-amber-300 shadow-xs shadow-amber-400/20";
+                          }
+
+                          return (
+                            <button
+                              key={dayNum}
+                              type="button"
+                              onClick={() => setSelectedHeatmapDay(dayNum)}
+                              className={`aspect-square rounded-xl border flex flex-col items-center justify-center transition-all transform active:scale-95 ${cellBg} ${
+                                isSelected ? "ring-2 ring-white scale-105 z-10" : ""
+                              }`}
+                              title={`${dayNum}-kun hisoboti`}
+                            >
+                              <span className="text-[11px] font-mono font-bold leading-none">{dayNum}</span>
+                              <span className="text-[8px] opacity-75 mt-0.5 leading-none">
+                                {isDone ? "✓" : isPending ? "⏳" : "-"}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Heatmap Legend */}
+                      <div className="flex items-center justify-between text-[10px] text-zinc-400 pt-1 border-t border-zinc-800/80">
+                        <span className="text-zinc-500 font-mono">1-dan 30-kungacha amaliyot davri</span>
+                        <div className="flex items-center space-x-1.5">
+                          <span>Kam</span>
+                          <div className="w-2.5 h-2.5 rounded-xs bg-zinc-800 border border-zinc-700" />
+                          <div className="w-2.5 h-2.5 rounded-xs bg-amber-400" />
+                          <div className="w-2.5 h-2.5 rounded-xs bg-emerald-600" />
+                          <div className="w-2.5 h-2.5 rounded-xs bg-emerald-500" />
+                          <span>Ko'p</span>
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Interactive Selected Day Inspector Panel */}
+                    {selectedHeatmapDay && (
+                      <div className="p-4 rounded-2xl border border-zinc-200 bg-white space-y-3 animate-in fade-in duration-150">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <span className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-bold font-mono text-xs border border-blue-200/60">
+                              {selectedHeatmapDay}/30-kun
+                            </span>
+                            <span className="text-xs font-semibold text-zinc-900">
+                              {selectedHeatmapDay <= 18
+                                ? `Topshiriq: REST API & Korxona modullari (${selectedHeatmapDay}.10.2026)`
+                                : selectedHeatmapDay === 19
+                                ? "Topshiriq: Tekshiruv jarayonida (Bugun)"
+                                : "Topshiriq: Kutilayotgan reja"}
+                            </span>
+                          </div>
+
+                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                            selectedHeatmapDay <= 18
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              : selectedHeatmapDay === 19
+                              ? "bg-amber-50 text-amber-700 border border-amber-200"
+                              : "bg-zinc-100 text-zinc-500 border border-zinc-200"
+                          }`}>
+                            {selectedHeatmapDay <= 18 ? "🟢 Tasdiqlangan" : selectedHeatmapDay === 19 ? "🟡 Kutilmoqda" : "⚪ Rejalashtirilgan"}
+                          </span>
+                        </div>
+
+                        {selectedHeatmapDay <= 18 ? (
+                          <div className="space-y-3 pt-1">
+                            <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200/60 text-xs text-zinc-700 space-y-1">
+                              <p className="font-semibold text-zinc-900">Kundalik hisoboti matni:</p>
+                              <p className="text-zinc-600 text-xs leading-relaxed">
+                                "Bugun korxona ustozi bergan yo'nalish bo'yicha PostgreSQL bazasida migratsiyalarni amalga oshirdim,
+                                FastAPI endpointlari uchun Pydantic schemalarini tayyorladim va Swagger UI orqali test qildim."
+                              </p>
+                            </div>
+
+                            <div className="flex items-center justify-between text-xs pt-1">
+                              <div>
+                                <span className="text-zinc-500">Mentor Bahosi: </span>
+                                <b className="text-zinc-900 font-mono">⭐⭐⭐⭐⭐ 5.0 (A'lo)</b>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => setHeatmapPhotoModal({
+                                  day: selectedHeatmapDay,
+                                  date: `${selectedHeatmapDay}.10.2026`,
+                                  task: "PostgreSQL & FastAPI backend arxitekturasi integratsiyasi",
+                                  score: "5.0 / 5.0 (A'lo)",
+                                  mentor: "Akrom Qosimov (Senior Tech Lead)",
+                                  photoUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80"
+                                })}
+                                className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-semibold transition-all border border-blue-200/60"
+                              >
+                                <Camera className="w-3.5 h-3.5" />
+                                <span>Katta Fotoni Ko'rish</span>
+                              </button>
+                            </div>
+                          </div>
+                        ) : selectedHeatmapDay === 19 ? (
+                          <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-xs text-amber-900">
+                            Talaba hisoboti yuklangan. Korxona amaliyot ustozi tomonidan baholanish jarayonida.
+                          </div>
+                        ) : (
+                          <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200/60 text-xs text-zinc-500">
+                            Ushbu kun amaliyot jadvaliga ko'ra hali boshlanmagan.
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -3315,13 +3580,13 @@ export default function DekanatDashboard() {
                             const targetTeacher = inlineTeacherSelect || selectedStudent.teacher;
                             const count = students.filter(s => s.teacher === targetTeacher && s.id !== selectedStudent.id).length;
                             if (count >= 3) {
-                              setNotification('⚠️ Xatolik: Ushbu ustozning kvotasi to\'lgan (3/3)!');
+                              setNotification("⚠️ Xatolik: Ushbu ustozning kvotasi to'lgan (3/3)!");
                               setTimeout(() => setNotification(null), 3000);
                               return;
                             }
                             setStudents(students.map(s => s.id === selectedStudent.id ? { ...s, teacher: targetTeacher } : s));
                             setSelectedStudent({ ...selectedStudent, teacher: targetTeacher });
-                            setNotification('Ustoz muvaffaqiyatli biriktirildi (3/3 limit qoidasi bajarildi)!');
+                            setNotification("Ustoz muvaffaqiyatli biriktirildi (3/3 limit qoidasi bajarildi)!");
                             setTimeout(() => setNotification(null), 3000);
                           }}
                           className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800"
@@ -3336,16 +3601,72 @@ export default function DekanatDashboard() {
               </div>
 
               {/* Modal Footer */}
-              <div className="px-6 py-3.5 bg-zinc-50 border-t border-zinc-100 flex justify-end">
+              <div className="px-6 py-3.5 bg-zinc-50 border-t border-zinc-100 flex items-center justify-between">
+                <span className="text-xs text-zinc-500 font-mono">TIU PMS v3.0 • Talaba Dosyesi</span>
                 <button
-                  onClick={() => setSelectedStudent(null)}
-                  className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800"
+                  onClick={() => {
+                    setSelectedStudent(null);
+                    setIsEditingDossier(false);
+                  }}
+                  className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-medium hover:bg-zinc-800 transition-all shadow-xs"
                 >
                   Yopish
                 </button>
               </div>
             </div>
           </div>
+      )}
+
+      {/* 5.1 Large Heatmap Photo Viewer Modal */}
+      {heatmapPhotoModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-60 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl space-y-0">
+            <div className="p-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50">
+              <div className="flex items-center space-x-2">
+                <Camera className="w-4 h-4 text-blue-600" />
+                <h4 className="text-sm font-bold text-zinc-900">
+                  {heatmapPhotoModal.day}-kun Fotohisoboti ({heatmapPhotoModal.date})
+                </h4>
+              </div>
+              <button
+                onClick={() => setHeatmapPhotoModal(null)}
+                className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-200 rounded-xl transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-3 bg-zinc-900">
+              <div className="relative aspect-video rounded-2xl overflow-hidden bg-black flex items-center justify-center border border-zinc-800">
+                <img
+                  src={heatmapPhotoModal.photoUrl}
+                  alt="Amaliyot hisoboti fotolavhasi"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-xs text-white text-[11px] font-mono">
+                  📍 Korxona amaliyot joyidan fotodalil
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-white space-y-2 border-t border-zinc-100 text-xs">
+              <p className="font-semibold text-zinc-900">Vazifa: <span className="font-normal text-zinc-600">{heatmapPhotoModal.task}</span></p>
+              <div className="flex items-center justify-between pt-1 border-t border-zinc-100 text-zinc-500">
+                <span>Mentor: <b className="text-zinc-800">{heatmapPhotoModal.mentor}</b></span>
+                <span>Baho: <b className="text-emerald-700 font-mono">{heatmapPhotoModal.score}</b></span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-zinc-50 border-t border-zinc-100 flex justify-end">
+              <button
+                onClick={() => setHeatmapPhotoModal(null)}
+                className="px-4 py-1.5 bg-zinc-900 text-white rounded-xl text-xs font-semibold hover:bg-zinc-800"
+              >
+                Yopish
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* 6. Application / Document Review Modal */}
